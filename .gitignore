@@ -1,0 +1,76 @@
+# Virtual environments
+venv/
+env/
+.venv/
+test_venv/
+**/venv/
+**/env/
+**/.venv/
+**/test_venv/
+
+# Python cache & compiled files
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Node.js dependencies & builds
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+**/out/
+build/
+**/build/
+.vercel/
+**/.vercel/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env*.local
+.env.production
+.env.development
+!.env.example
+
+# Large media files (videos & audio)
+*.mp4
+*.m4a
+*.webm
+*.mkv
+*.avi
+*.mov
+*.wav
+*.mp3
+**/public/clips/*
+!**/public/clips/.gitkeep
+
+# Binaries & packages
+cloudflared
+cloudflared.deb
+*.deb
+*.rpm
+*.exe
+
+# Logs
+*.log
+**/ngrok.log
+**/tunnel.log
+**/clipper_debug.log
+
+# Temporary test outputs
+test_*.png
+test_*.ass
+new_clip_subtitles.ass
+
+# OS files
+.DS_Store
+Thumbs.db

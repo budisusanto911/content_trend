@@ -1,0 +1,70 @@
+--- src/services/AIService.ts
++++ src/services/AIService.ts
+@@ -103,6 +103,70 @@
+     }
+   }
+ 
++  static async generateScript(topic: string, hook: string, context: string) {
++    const prompt = `
++You are an expert YouTube scriptwriter. Write a full YouTube video script based on the following:
++Topic: ${topic}
++Hook: ${hook}
++Context/Angle: ${context}
++
++Follow the rules:
++1. Include Visual/B-roll instructions in brackets like [Show fast paced montage].
++2. Write a compelling Intro, Body, and Outro.
++3. Optimize for Gen-Z retention.
++
++Output a JSON object exactly matching this schema:
++{
++  "script": [
++    {
++      "section": "Intro",
++      "visual": "B-roll description",
++      "voiceOver": "The spoken text"
++    }
++  ]
++}
++`;
++    try {
++      const response = await ai.chat.completions.create({
++        model: "qwen/qwen3.8-27b",
++        messages: [{ role: "system", content: "You respond only in JSON." }, { role: "user", content: prompt }],
++        response_format: { type: "json_object" },
++        max_tokens: 1500
++      });
++      return JSON.parse(response.choices[0]?.message?.content || '{}');
++    } catch (e: any) {
++      console.error(e);
++      return { script: [{ section: "Error", visual: "None", voiceOver: "Failed to generate script due to token limit or API error." }] };
++    }
++  }
++
++  static async generateSEO(topic: string) {
++    const prompt = `
++You are an expert YouTube SEO specialist. Generate metadata for a video about: ${topic}.
++Output a JSON object exactly matching this schema:
++{
++  "titleIdeas": ["Catchy Title 1", "Catchy Title 2", "Catchy Title 3"],
++  "description": "A full SEO optimized YouTube description",
++  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
++}
++`;
++    try {
++      const response = await ai.chat.completions.create({
++        model: "qwen/qwen3.8-27b",
++        messages: [{ role: "system", content: "You respond only in JSON." }, { role: "user", content: prompt }],
++        response_format: { type: "json_object" },
++        max_tokens: 800
++      });
++      return JSON.parse(response.choices[0]?.message?.content || '{}');
++    } catch (e: any) {
++      console.error(e);
++      return { titleIdeas: ["Error Generating Title"], description: "Error", tags: [] };
++    }
++  }
++
+   private static getMockContext() {
+     throw new Error("No data. Mock data has been removed.");
+   }

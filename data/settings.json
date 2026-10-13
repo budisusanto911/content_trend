@@ -1,0 +1,21 @@
+{
+  "autoScrapeEnabled": true,
+  "scrapeIntervalHours": 8,
+  "defaultRegion": "ID",
+  "maxTrendingResults": 30,
+  "lastScrapedAt": "2026-10-13T06:09:10.501Z",
+  "cacheDurationMinutes": 480,
+  "subtitleTheme": "hormozi_yellow",
+  "watermarkText": "",
+  "showProgressBar": true,
+  "showTopHook": true,
+  "showSubtitles": true,
+  "captionTemplate": "{title}\n\n🔥 {hook}\n\n👇 Tonton video lengkapnya di channel kami!\n\n{hashtags}",
+  "defaultHashtags": "#shorts #reels #viral #trending #podcastindonesia",
+  "targetDurationMin": 30,
+  "targetDurationMax": 50,
+  "webhookType": "none",
+  "webhookUrl": "",
+  "autoClipEnabled": true,
+  "autoPublishEnabled": true
+}
