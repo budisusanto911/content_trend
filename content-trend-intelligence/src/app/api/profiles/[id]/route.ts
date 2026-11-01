@@ -16,8 +16,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params;
     const body = await req.json();
-    // Hanya izinkan flag koneksi; Instagram tidak boleh di-connect manual (wajib lewat OAuth)
     const patch: Record<string, any> = {};
+    if (typeof body.name === 'string') patch.name = body.name;
+    if (typeof body.targetKeyword === 'string') patch.targetKeyword = body.targetKeyword;
+    if (typeof body.category === 'string' || body.category === null) patch.category = body.category;
     if (typeof body.youtubeConnected === 'boolean') patch.youtubeConnected = body.youtubeConnected;
     if (typeof body.tiktokConnected === 'boolean') patch.tiktokConnected = body.tiktokConnected;
     if (body.instagramConnected === false) {

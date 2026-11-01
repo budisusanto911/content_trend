@@ -20,12 +20,16 @@ import {
   ThumbsUp,
   Pencil,
   X,
+  Compass,
+  Tag,
 } from "lucide-react";
+import { NICHE_OPTIONS } from "@/lib/nicheConstants";
 
 type Profile = {
   id: string;
   name: string;
   targetKeyword?: string;
+  category?: string | null;
   instagramConnected: boolean;
   youtubeConnected: boolean;
   igUsername?: string | null;
@@ -35,6 +39,7 @@ type Profile = {
 type WatchlistItem = {
   id: string;
   title: string;
+  niche?: string;
   keywords: string[];
   matchCreator?: string;
   profileId: string;
@@ -93,6 +98,7 @@ type Match = {
 };
 
 const EMPTY_FORM = {
+  niche: NICHE_OPTIONS[0] as string,
   title: "",
   keywords: "",
   matchCreator: "",
@@ -167,6 +173,7 @@ export default function AutoPilotPage() {
     try {
       const payload = {
         ...form,
+        title: form.title.trim() || form.niche,
         keywords: form.keywords.split(",").map((k) => k.trim()).filter(Boolean),
       };
       const res = await fetch(editingId ? `/api/watchlist/${editingId}` : "/api/watchlist", {
@@ -176,7 +183,7 @@ export default function AutoPilotPage() {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      flash(editingId ? "Watchlist diperbarui" : "Judul ditambahkan ke watchlist");
+      flash(editingId ? "Target Niche diperbarui" : "Target Niche ditambahkan ke watchlist");
       setForm(EMPTY_FORM);
       setEditingId(null);
       loadAll();
@@ -190,6 +197,7 @@ export default function AutoPilotPage() {
   const startEdit = (w: WatchlistItem) => {
     setEditingId(w.id);
     setForm({
+      niche: w.niche || NICHE_OPTIONS[0],
       title: w.title,
       keywords: w.keywords.join(", "),
       matchCreator: w.matchCreator || "",
@@ -212,7 +220,7 @@ export default function AutoPilotPage() {
   };
 
   const deleteItem = async (id: string) => {
-    if (!confirm("Hapus judul ini dari watchlist? Klip yang belum dipublish juga dihapus dari antrian.")) return;
+    if (!confirm("Hapus target niche ini dari watchlist? Klip yang belum dipublish juga dihapus dari antrian.")) return;
     await fetch(`/api/watchlist/${id}`, { method: "DELETE" });
     loadAll();
   };
@@ -297,7 +305,7 @@ export default function AutoPilotPage() {
           <div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">Auto Pilot</h1>
             <p className="text-xs sm:text-sm text-gray-500">
-              Watchlist judul → auto clip dari hasil scraping trending → auto publish 1x sehari per judul
+              Target Niche → auto clip dari hasil scraping trending sesuai niche → auto publish 1x sehari per niche
             </p>
           </div>
         </div>
@@ -335,7 +343,7 @@ export default function AutoPilotPage() {
         {/* Form */}
         <form onSubmit={submitForm} className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 space-y-4 h-fit">
           <div className="flex items-center justify-between">
-            <h2 className="font-bold text-lg">{editingId ? "Edit Judul" : "Tambah Judul"}</h2>
+            <h2 className="font-bold text-lg">{editingId ? "Edit Target Niche" : "Tambah Target Niche"}</h2>
             {editingId && (
               <button
                 type="button"
@@ -351,26 +359,81 @@ export default function AutoPilotPage() {
             )}
           </div>
 
-          <Field label="Judul / Label" htmlFor="wl-title">
+          <Field label="Pilih Target Niche / Kategori" htmlFor="wl-niche" hint="Kategori konten trending yang ingin diambil otomatis">
+            <select
+              id="wl-niche"
+              className="input font-bold text-gray-800"
+              value={form.niche}
+              onChange={(e) => {
+                const nextNiche = e.target.value;
+                setForm({
+                  ...form,
+                  niche: nextNiche,
+                  title: !form.title || NICHE_OPTIONS.includes(form.title as any) ? nextNiche : form.title,
+                });
+              }}
+            >
+              {NICHE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Label / Nama Target" htmlFor="wl-title">
             <input
               id="wl-title"
               className="input"
-              placeholder="mis. Podcast Deddy Corbuzier"
+              placeholder="mis. Gaming Viral atau Podcast Mingguan"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
             />
           </Field>
 
+          <Field label="Upload ke Akun" htmlFor="wl-profile">
+            <select
+              id="wl-profile"
+              className="input"
+              value={form.profileId}
+              onChange={(e) => {
+                const profileId = e.target.value;
+                const picked = profiles.find((p) => p.id === profileId);
+                const accountNiche = picked?.category || form.niche;
+                const defKw = picked?.targetKeyword?.trim() || "";
+                setForm({
+                  ...form,
+                  profileId,
+                  niche: accountNiche,
+                  title: form.title.trim() && !NICHE_OPTIONS.includes(form.title as any) ? form.title : (accountNiche || picked?.name || ""),
+                  keywords: form.keywords.trim() ? form.keywords : (picked?.category ? "" : defKw),
+                });
+              }}
+              required
+            >
+              <option value="">— Pilih akun —</option>
+              {profiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                  {p.category ? ` · Niche: ${p.category}` : ""}
+                  {p.targetKeyword && !p.category ? ` (${p.targetKeyword})` : ""}
+                  {p.igUsername ? ` · IG @${p.igUsername}` : ""}
+                  {p.youtubeChannelTitle ? ` · YT ${p.youtubeChannelTitle}` : ""}
+                </option>
+              ))}
+            </select>
+          </Field>
+
           <Field
-            label="Keywords (opsional, pisahkan koma)"
+            label="Filter Keywords Tambahan (opsional)"
             htmlFor="wl-kw"
-            hint="Jika dikosongkan otomatis memakai Judul / Target Keyword dari akun"
+            hint="Kosongkan untuk mengambil SEMUA video trending dalam niche ini (rekomendasi)"
           >
             <input
               id="wl-kw"
               className="input"
-              placeholder="close the door, deddy corbuzier"
+              placeholder="opsional: misal hanya video memuat kata 'mobile legend'"
               value={form.keywords}
               onChange={(e) => setForm({ ...form, keywords: e.target.value })}
             />
@@ -384,36 +447,6 @@ export default function AutoPilotPage() {
               value={form.matchCreator}
               onChange={(e) => setForm({ ...form, matchCreator: e.target.value })}
             />
-          </Field>
-
-          <Field label="Upload ke Akun" htmlFor="wl-profile">
-            <select
-              id="wl-profile"
-              className="input"
-              value={form.profileId}
-              onChange={(e) => {
-                const profileId = e.target.value;
-                const picked = profiles.find((p) => p.id === profileId);
-                const defKw = picked?.targetKeyword?.trim() || "";
-                setForm({
-                  ...form,
-                  profileId,
-                  keywords: form.keywords.trim() ? form.keywords : defKw,
-                  title: form.title.trim() ? form.title : defKw || picked?.name || "",
-                });
-              }}
-              required
-            >
-              <option value="">— Pilih akun —</option>
-              {profiles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                  {p.targetKeyword ? ` (${p.targetKeyword})` : ""}
-                  {p.igUsername ? ` · IG @${p.igUsername}` : ""}
-                  {p.youtubeChannelTitle ? ` · YT ${p.youtubeChannelTitle}` : ""}
-                </option>
-              ))}
-            </select>
           </Field>
 
           <fieldset>
@@ -490,14 +523,14 @@ export default function AutoPilotPage() {
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-2xl transition"
           >
             {saving ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
-            {editingId ? "Simpan Perubahan" : "Tambah ke Watchlist"}
+            {editingId ? "Simpan Perubahan" : "+ Tambah Target Niche"}
           </button>
         </form>
 
         {/* Watchlist table */}
         <div className="lg:col-span-3 bg-white rounded-3xl border border-gray-100 p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-bold text-lg">Watchlist ({items.length})</h2>
+            <h2 className="font-bold text-lg">Watchlist Niche ({items.length})</h2>
             <div className="flex gap-2">
               <button onClick={previewMatches} disabled={!!busyAction} className="btn-secondary">
                 {busyAction === "preview" ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
@@ -512,20 +545,29 @@ export default function AutoPilotPage() {
 
           {items.length === 0 ? (
             <p className="text-sm text-gray-400 py-10 text-center">
-              Belum ada judul. Tambahkan judul & keyword di form sebelah kiri.
+              Belum ada target niche. Tambahkan niche & target akun di form sebelah kiri.
             </p>
           ) : (
             <ul className="divide-y divide-gray-50">
               {items.map((w) => (
                 <li key={w.id} className="py-4 flex flex-col md:flex-row md:items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-bold ${w.enabled ? "" : "text-gray-400 line-through"}`}>{w.title}</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className={`font-bold ${w.enabled ? "text-gray-900" : "text-gray-400 line-through"}`}>{w.title}</span>
+                      {w.niche && (
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-bold rounded-md border border-blue-200/60">
+                          🎯 {w.niche}
+                        </span>
+                      )}
                       {w.platforms.includes("instagram") && <Camera size={14} className="text-pink-500" aria-label="Instagram" />}
                       {w.platforms.includes("youtube") && <Video size={14} className="text-red-500" aria-label="YouTube" />}
                     </div>
                     <p className="text-xs text-gray-500 truncate">
-                      {w.keywords.join(", ")}
+                      {w.keywords.length > 0 ? (
+                        <span>Filter: <b className="text-gray-700">{w.keywords.join(", ")}</b></span>
+                      ) : (
+                        <span className="text-emerald-600 font-medium">✓ Semua video trending di niche ini</span>
+                      )}
                       {w.matchCreator ? ` · channel: ${w.matchCreator}` : ""}
                     </p>
                     <p className="text-[11px] text-gray-400 mt-1">

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Video, Camera, Plus, Key, CheckCircle2, Trash2 } from "lucide-react";
+import { Users, Video, Camera, Plus, Key, CheckCircle2, Trash2, Tag } from "lucide-react";
+import { NICHE_OPTIONS } from "@/lib/nicheConstants";
 
 type Profile = {
   id: string;
   name: string;
   targetKeyword: string;
+  category?: string | null;
   youtubeConnected: boolean;
   tiktokConnected: boolean;
   instagramConnected: boolean;
@@ -20,6 +22,7 @@ export default function PublisherAccountsPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
   const [newProfileKeyword, setNewProfileKeyword] = useState("");
+  const [newProfileCategory, setNewProfileCategory] = useState<string>(NICHE_OPTIONS[0]);
 
   // Login Modal State (Removed for OAuth)
   
@@ -91,12 +94,19 @@ export default function PublisherAccountsPage() {
   };
 
   const handleAdd = async () => {
-    if (!newProfileName || !newProfileKeyword) return;
+    if (!newProfileName.trim()) {
+      alert("Nama profil wajib diisi.");
+      return;
+    }
     try {
       const res = await fetch("/api/profiles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newProfileName, targetKeyword: newProfileKeyword })
+        body: JSON.stringify({
+          name: newProfileName.trim(),
+          targetKeyword: newProfileKeyword.trim() || newProfileCategory,
+          category: newProfileCategory,
+        })
       });
       
       const data = await res.json();
@@ -105,6 +115,7 @@ export default function PublisherAccountsPage() {
         setProfiles(prev => [data.profile, ...prev]);
         setNewProfileName("");
         setNewProfileKeyword("");
+        setNewProfileCategory(NICHE_OPTIONS[0]);
         setIsAdding(false);
       } else {
         alert("Gagal menyimpan profil: " + (data.error || "Terjadi kesalahan."));
@@ -180,24 +191,58 @@ export default function PublisherAccountsPage() {
 
       {isAdding && (
         <div className="mb-8 p-6 bg-white rounded-3xl border border-gray-100 shadow-sm">
-          <h3 className="font-bold mb-4">Tambah Profil Baru</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input 
-              type="text" 
-              placeholder="Nama Profil (misal: Klip dr. Tirta)" 
-              value={newProfileName}
-              onChange={e => setNewProfileName(e.target.value)}
-              className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm w-full outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input 
-              type="text" 
-              placeholder="Target Keyword (misal: podcast dr tirta)" 
-              value={newProfileKeyword}
-              onChange={e => setNewProfileKeyword(e.target.value)}
-              className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm w-full outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <h3 className="font-bold mb-4 text-base text-gray-900">Tambah Profil Baru</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Nama Profil *</label>
+              <input 
+                type="text" 
+                placeholder="misal: Klip dr. Tirta" 
+                value={newProfileName}
+                onChange={e => setNewProfileName(e.target.value)}
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Kategori / Niche *</label>
+              <select
+                value={newProfileCategory}
+                onChange={e => setNewProfileCategory(e.target.value)}
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-800"
+              >
+                {NICHE_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Target Keyword (Opsional)</label>
+              <input 
+                type="text" 
+                placeholder="misal: podcast dr tirta" 
+                value={newProfileKeyword}
+                onChange={e => setNewProfileKeyword(e.target.value)}
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
-          <button onClick={handleAdd} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-sm">Simpan Profil</button>
+          <div className="flex justify-end gap-2">
+            <button 
+              type="button" 
+              onClick={() => setIsAdding(false)} 
+              className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition"
+            >
+              Batal
+            </button>
+            <button 
+              onClick={handleAdd} 
+              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-sm transition"
+            >
+              Simpan Profil
+            </button>
+          </div>
         </div>
       )}
 
@@ -227,8 +272,15 @@ export default function PublisherAccountsPage() {
           )}
           {profiles.map((profile) => (
             <div key={profile.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col h-full">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-black text-gray-900">{profile.name}</h3>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="text-xl font-black text-gray-900">{profile.name}</h3>
+                  {profile.category && (
+                    <span className="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-200/60">
+                      🎯 Niche: {profile.category}
+                    </span>
+                  )}
+                </div>
                 <button onClick={() => handleDelete(profile.id)} className="text-gray-400 hover:text-red-500 transition-colors">
                   <Trash2 className="w-5 h-5" />
                 </button>

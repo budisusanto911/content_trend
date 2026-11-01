@@ -6,9 +6,11 @@ export type PublishPlatform = "instagram" | "youtube";
 
 export interface WatchlistItem {
   id: string;
-  /** Label judul, misal "Podcast Deddy" */
+  /** Label judul / target, misal "Gaming Shorts" */
   title: string;
-  /** Kata kunci pencocokan (dicek ke judul, creator, hashtag video trending) */
+  /** Kategori / Niche target (misal: "Gaming", "Entertainment", "Podcast & Talkshow", dll.) */
+  niche?: string;
+  /** Kata kunci pencocokan opsional (jika kosong, ambil semua video di niche ini) */
   keywords: string[];
   /** Opsional: hanya cocokkan video dari channel/creator ini */
   matchCreator?: string;
@@ -108,22 +110,23 @@ class WatchlistStore {
 export function sanitizeWatchlistInput(body: any, partial = false): Partial<WatchlistInput> | string {
   const out: Partial<WatchlistInput> = {};
 
+  if (body.niche !== undefined || !partial) {
+    out.niche = String(body.niche ?? "").trim() || undefined;
+  }
+
   if (body.title !== undefined || !partial) {
-    const title = String(body.title ?? "").trim();
-    if (!title) return "Judul wajib diisi";
+    let title = String(body.title ?? "").trim();
+    if (!title && out.niche) {
+      title = out.niche;
+    }
+    if (!title) return "Kategori / Niche atau Label wajib diisi";
     out.title = title;
   }
 
   if (body.keywords !== undefined || !partial) {
     const raw = Array.isArray(body.keywords) ? body.keywords : String(body.keywords ?? "").split(",");
     const keywords = raw.map((k: any) => String(k).trim()).filter(Boolean);
-    if (keywords.length === 0 && out.title) {
-      out.keywords = [out.title];
-    } else if (keywords.length === 0) {
-      return "Minimal 1 keyword atau judul";
-    } else {
-      out.keywords = keywords;
-    }
+    out.keywords = keywords;
   }
 
   if (body.matchCreator !== undefined) {

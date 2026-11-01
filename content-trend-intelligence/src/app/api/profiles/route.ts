@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     const data = await req.json();
     const profile = await profileStore.createProfile({
       name: data.name,
-      targetKeyword: data.targetKeyword,
+      targetKeyword: data.targetKeyword || "",
+      category: data.category || null,
       youtubeConnected: data.youtubeConnected || false,
       tiktokConnected: data.tiktokConnected || false,
       instagramConnected: data.instagramConnected || false,

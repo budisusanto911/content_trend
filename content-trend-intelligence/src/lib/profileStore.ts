@@ -6,6 +6,7 @@ export type PublisherProfileData = {
   id: string;
   name: string;
   targetKeyword: string;
+  category?: string | null;
   youtubeConnected: boolean;
   tiktokConnected: boolean;
   instagramConnected: boolean;
@@ -74,6 +75,7 @@ class ProfileStore {
   async createProfile(data: {
     name: string;
     targetKeyword: string;
+    category?: string | null;
     youtubeConnected?: boolean;
     tiktokConnected?: boolean;
     instagramConnected?: boolean;
@@ -83,6 +85,7 @@ class ProfileStore {
       id: crypto.randomUUID(),
       name: data.name,
       targetKeyword: data.targetKeyword,
+      category: data.category || null,
       youtubeConnected: data.youtubeConnected ?? false,
       tiktokConnected: data.tiktokConnected ?? false,
       instagramConnected: data.instagramConnected ?? false,

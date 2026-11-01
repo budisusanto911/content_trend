@@ -93,24 +93,165 @@ class AutoClipScheduler {
 
   // ───────────────────────── Matching ─────────────────────────
 
-  /** Cocokkan 1 video trending dengan 1 item watchlist. Return keyword yang cocok atau null. */
+  /** Cocokkan 1 video trending dengan 1 item watchlist (berdasarkan Niche / Kategori & Keywords). */
   private matchVideo(video: any, item: WatchlistItem): string | null {
     if (!video?.originalUrl || String(video.id || "").startsWith("mock_")) return null;
 
     const creator = normalize(video.creator);
     if (item.matchCreator && !creator.includes(normalize(item.matchCreator))) return null;
 
-    const haystack = [
-      normalize(video.title),
-      creator,
-      ...(Array.isArray(video.hashtags) ? video.hashtags.map(normalize) : []),
-    ].join(" \n ");
+    const videoTitle = normalize(video.title);
+    const videoCatRaw = String(video.category || "");
+    const videoCategory = normalize(videoCatRaw);
+    const videoTags = Array.isArray(video.hashtags) ? video.hashtags.map(normalize) : [];
+    const haystack = [videoTitle, creator, videoCategory, ...videoTags].join(" \n ");
 
-    const candidates = Array.from(new Set([...(item.keywords || []), item.title]));
-    for (const kw of candidates) {
-      const k = normalize(kw).trim();
-      if (k && haystack.includes(k)) return kw;
+    // 1. Filter keywords spesifik (jika diisi oleh user)
+    let matchedSpecificKw: string | null = null;
+    if (item.keywords && item.keywords.length > 0) {
+      for (const kw of item.keywords) {
+        const k = normalize(kw).trim();
+        if (k && haystack.includes(k)) {
+          matchedSpecificKw = kw;
+          break;
+        }
+      }
+      // Jika user memberikan keywords spesifik dan TIDAK ADA yang cocok, jangan match video ini
+      if (!matchedSpecificKw) return null;
     }
+
+    // 2. Pencocokan berdasarkan Niche / Kategori
+    if (item.niche) {
+      const niche = normalize(item.niche);
+
+      // Jika "Semua Kategori (All Trends)"
+      if (niche.includes("semua") || niche === "all") {
+        return matchedSpecificKw ? `${matchedSpecificKw} (All Trends)` : (videoCatRaw ? `Trend: ${videoCatRaw}` : "All Trends");
+      }
+
+      // Cocokkan langsung dengan video.category
+      if (videoCategory && (videoCategory.includes(niche) || niche.includes(videoCategory))) {
+        return matchedSpecificKw ? `${matchedSpecificKw} [${videoCatRaw}]` : `Kategori: ${videoCatRaw}`;
+      }
+
+      // Semantic / Sub-niche Matchers
+      if (niche.includes("podcast") || niche.includes("talkshow")) {
+        const podcastKeywords = [
+          "podcast", "talkshow", "ngobrol", "interview", "bincang", "curhat",
+          "obrolan", "close the door", "bocor alus", "dewa judika", "podkesmas"
+        ];
+        for (const pk of podcastKeywords) {
+          if (haystack.includes(pk)) return matchedSpecificKw || `Podcast: ${pk}`;
+        }
+        if (videoCategory.includes("people & blogs") || videoCategory.includes("entertainment")) {
+          return matchedSpecificKw || `Podcast (Kategori: ${videoCatRaw})`;
+        }
+      }
+
+      if (niche.includes("gaming") || niche.includes("game")) {
+        if (videoCategory.includes("gaming")) return matchedSpecificKw || "Gaming";
+        const gameKeywords = ["gameplay", "stream", "mobile legends", "roblox", "free fire", "minecraft", "gta", "gamer", "esports"];
+        for (const gk of gameKeywords) {
+          if (haystack.includes(gk)) return matchedSpecificKw || `Gaming: ${gk}`;
+        }
+      }
+
+      if (niche.includes("bisnis") || niche.includes("finansial") || niche.includes("keuangan") || niche.includes("investasi")) {
+        const financeKeywords = [
+          "bisnis", "finansial", "investasi", "saham", "crypto", "kripto",
+          "uang", "cuan", "kaya", "ekonomi", "omset", "modal", "passive income"
+        ];
+        for (const fk of financeKeywords) {
+          if (haystack.includes(fk)) return matchedSpecificKw || `Bisnis/Finansial: ${fk}`;
+        }
+      }
+
+      if (niche.includes("kesehatan") || niche.includes("olahraga") || niche.includes("health") || niche.includes("sports")) {
+        if (videoCategory.includes("sports")) return matchedSpecificKw || "Sports";
+        const healthKeywords = [
+          "kesehatan", "dokter", "sehat", "diet", "workout", "fitness", "gym",
+          "medis", "olahraga", "nutrisi", "penyakit", "gejala", "tips sehat"
+        ];
+        for (const hk of healthKeywords) {
+          if (haystack.includes(hk)) return matchedSpecificKw || `Kesehatan/Olahraga: ${hk}`;
+        }
+      }
+
+      if (niche.includes("edukasi") || niche.includes("education") || niche.includes("belajar") || niche.includes("sains")) {
+        if (videoCategory.includes("education") || videoCategory.includes("science")) return matchedSpecificKw || `Education: ${videoCatRaw}`;
+        const eduKeywords = ["edukasi", "belajar", "fakta", "sejarah", "pengetahuan", "tips", "tutorial", "sains", "dunia"];
+        for (const ek of eduKeywords) {
+          if (haystack.includes(ek)) return matchedSpecificKw || `Edukasi: ${ek}`;
+        }
+      }
+
+      if (niche.includes("teknologi") || niche.includes("tech") || niche.includes("ai")) {
+        if (videoCategory.includes("science & tech")) return matchedSpecificKw || "Science & Tech";
+        const techKeywords = ["teknologi", "tech", "gadget", "ai", "artificial intelligence", "robot", "software", "hp", "laptop", "coding"];
+        for (const tk of techKeywords) {
+          if (haystack.includes(tk)) return matchedSpecificKw || `Tech/AI: ${tk}`;
+        }
+      }
+
+      if (niche.includes("komedi") || niche.includes("comedy") || niche.includes("humor") || niche.includes("lucu")) {
+        if (videoCategory.includes("comedy")) return matchedSpecificKw || "Comedy";
+        const comedyKeywords = ["lucu", "ngakak", "stand up", "komedi", "humor", "prank", "sketsa"];
+        for (const ck of comedyKeywords) {
+          if (haystack.includes(ck)) return matchedSpecificKw || `Komedi: ${ck}`;
+        }
+      }
+
+      if (niche.includes("musik") || niche.includes("music") || niche.includes("lagu")) {
+        if (videoCategory.includes("music")) return matchedSpecificKw || "Music";
+        const musicKeywords = ["musik", "music", "lagu", "dangdut", "koplo", "cover", "konser", "lirik", "pop", "singing"];
+        for (const mk of musicKeywords) {
+          if (haystack.includes(mk)) return matchedSpecificKw || `Musik: ${mk}`;
+        }
+      }
+
+      if (niche.includes("kuliner") || niche.includes("food") || niche.includes("masak")) {
+        const foodKeywords = ["kuliner", "resep", "masak", "makanan", "mukbang", "makan", "street food", "jajanan", "resto", "baking"];
+        for (const fk of foodKeywords) {
+          if (haystack.includes(fk)) return matchedSpecificKw || `Kuliner: ${fk}`;
+        }
+      }
+
+      if (niche.includes("horor") || niche.includes("misteri") || niche.includes("horror")) {
+        const horrorKeywords = ["horor", "horror", "misteri", "serem", "hantu", "mistis", "indigo", "konspirasi", "creepy", "angker"];
+        for (const hk of horrorKeywords) {
+          if (haystack.includes(hk)) return matchedSpecificKw || `Horor: ${hk}`;
+        }
+      }
+
+      if (niche.includes("entertainment") || niche.includes("hiburan")) {
+        if (videoCategory.includes("entertainment") || videoCategory.includes("film")) {
+          return matchedSpecificKw || `Entertainment: ${videoCatRaw}`;
+        }
+      }
+
+      if (niche.includes("berita") || niche.includes("politik") || niche.includes("news")) {
+        if (videoCategory.includes("news")) return matchedSpecificKw || "News & Politics";
+        const newsKeywords = ["berita", "politik", "presiden", "menteri", "dpr", "kpk", "pilkada", "pemilu", "debat"];
+        for (const nk of newsKeywords) {
+          if (haystack.includes(nk)) return matchedSpecificKw || `Berita/Politik: ${nk}`;
+        }
+      }
+
+      // Cek apakah kata dalam niche muncul di teks video
+      if (haystack.includes(niche)) {
+        return matchedSpecificKw || `Niche: ${item.niche}`;
+      }
+
+      return null;
+    }
+
+    // 3. Fallback jika tidak ada niche: cek keywords yang cocok atau item.title
+    if (matchedSpecificKw) return matchedSpecificKw;
+    if (item.title) {
+      const t = normalize(item.title).trim();
+      if (t && haystack.includes(t)) return item.title;
+    }
+
     return null;
   }
 
