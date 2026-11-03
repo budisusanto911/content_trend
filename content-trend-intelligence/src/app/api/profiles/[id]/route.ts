@@ -22,11 +22,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (typeof body.category === 'string' || body.category === null) patch.category = body.category;
     if (typeof body.youtubeConnected === 'boolean') patch.youtubeConnected = body.youtubeConnected;
     if (typeof body.tiktokConnected === 'boolean') patch.tiktokConnected = body.tiktokConnected;
-    if (body.instagramConnected === false) {
-      patch.instagramConnected = false;
-      patch.instagramToken = null;
-      patch.instagramUserId = null;
-      patch.instagramTokenExpiresAt = null;
+    if (typeof body.instagramConnected === 'boolean') {
+      patch.instagramConnected = body.instagramConnected;
+      if (!body.instagramConnected) {
+        patch.instagramToken = null;
+        patch.instagramUserId = null;
+        patch.instagramTokenExpiresAt = null;
+      }
+    }
+    if (typeof body.facebookConnected === 'boolean') {
+      patch.facebookConnected = body.facebookConnected;
+      if (!body.facebookConnected) {
+        patch.facebookToken = null;
+        patch.facebookPageId = null;
+        patch.facebookPageName = null;
+        patch.facebookTokenExpiresAt = null;
+      }
+    }
+    if (typeof body.threadsConnected === 'boolean') {
+      patch.threadsConnected = body.threadsConnected;
+      if (!body.threadsConnected) {
+        patch.threadsToken = null;
+        patch.threadsUserId = null;
+        patch.threadsUsername = null;
+        patch.threadsTokenExpiresAt = null;
+      }
     }
     const updated = await profileStore.updateProfile(id, patch);
     if (!updated) {

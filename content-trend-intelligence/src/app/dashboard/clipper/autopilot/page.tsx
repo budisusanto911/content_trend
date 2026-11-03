@@ -22,8 +22,11 @@ import {
   X,
   Compass,
   Tag,
+  AtSign,
 } from "lucide-react";
 import { NICHE_OPTIONS } from "@/lib/nicheConstants";
+
+type PlatformType = "instagram" | "youtube" | "facebook" | "threads";
 
 type Profile = {
   id: string;
@@ -32,8 +35,12 @@ type Profile = {
   category?: string | null;
   instagramConnected: boolean;
   youtubeConnected: boolean;
+  facebookConnected: boolean;
+  threadsConnected: boolean;
   igUsername?: string | null;
   youtubeChannelTitle?: string | null;
+  facebookPageName?: string | null;
+  threadsUsername?: string | null;
 };
 
 type WatchlistItem = {
@@ -43,7 +50,7 @@ type WatchlistItem = {
   keywords: string[];
   matchCreator?: string;
   profileId: string;
-  platforms: ("instagram" | "youtube")[];
+  platforms: PlatformType[];
   enabled: boolean;
   publishTime: string;
   requireApproval: boolean;
@@ -103,7 +110,7 @@ const EMPTY_FORM = {
   keywords: "",
   matchCreator: "",
   profileId: "",
-  platforms: ["instagram", "youtube"] as ("instagram" | "youtube")[],
+  platforms: ["instagram", "youtube"] as PlatformType[],
   publishTime: "19:00",
   requireApproval: false,
   maxClipsPerDay: 1,
@@ -420,6 +427,8 @@ export default function AutoPilotPage() {
                   {p.targetKeyword && !p.category ? ` (${p.targetKeyword})` : ""}
                   {p.igUsername ? ` · IG @${p.igUsername}` : ""}
                   {p.youtubeChannelTitle ? ` · YT ${p.youtubeChannelTitle}` : ""}
+                  {p.facebookPageName ? ` · FB ${p.facebookPageName}` : ""}
+                  {p.threadsUsername ? ` · Threads @${p.threadsUsername}` : ""}
                 </option>
               ))}
             </select>
@@ -451,13 +460,17 @@ export default function AutoPilotPage() {
 
           <fieldset>
             <legend className="text-xs font-bold text-gray-500 mb-2">Platform</legend>
-            <div className="flex gap-2">
-              {(["instagram", "youtube"] as const).map((p) => {
+            <div className="grid grid-cols-2 gap-2">
+              {(["instagram", "youtube", "facebook", "threads"] as const).map((p) => {
                 const active = form.platforms.includes(p);
                 const connected = selectedProfile
                   ? p === "instagram"
                     ? selectedProfile.instagramConnected
-                    : selectedProfile.youtubeConnected
+                    : p === "youtube"
+                    ? selectedProfile.youtubeConnected
+                    : p === "facebook"
+                    ? selectedProfile.facebookConnected
+                    : selectedProfile.threadsConnected
                   : true;
                 return (
                   <button
@@ -470,12 +483,15 @@ export default function AutoPilotPage() {
                         platforms: active ? form.platforms.filter((x) => x !== p) : [...form.platforms, p],
                       })
                     }
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold transition ${
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition ${
                       active ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-500"
                     }`}
                   >
-                    {p === "instagram" ? <Camera size={16} /> : <Video size={16} />}
-                    {p === "instagram" ? "Reels" : "Shorts"}
+                    {p === "instagram" && <Camera size={15} />}
+                    {p === "youtube" && <Video size={15} />}
+                    {p === "facebook" && <span className="w-4 h-4 rounded bg-blue-600 text-white flex items-center justify-center font-black text-[10px]">f</span>}
+                    {p === "threads" && <AtSign size={15} />}
+                    {p === "instagram" ? "IG Reels" : p === "youtube" ? "YT Shorts" : p === "facebook" ? "FB Reels" : "Threads"}
                     {!connected && <span className="text-[10px] text-red-500">(belum connect)</span>}
                   </button>
                 );
@@ -561,6 +577,10 @@ export default function AutoPilotPage() {
                       )}
                       {w.platforms.includes("instagram") && <Camera size={14} className="text-pink-500" aria-label="Instagram" />}
                       {w.platforms.includes("youtube") && <Video size={14} className="text-red-500" aria-label="YouTube" />}
+                      {w.platforms.includes("facebook") && (
+                        <span className="w-3.5 h-3.5 rounded bg-blue-600 text-white inline-flex items-center justify-center font-black text-[9px]" aria-label="Facebook">f</span>
+                      )}
+                      {w.platforms.includes("threads") && <AtSign size={14} className="text-gray-900" aria-label="Threads" />}
                     </div>
                     <p className="text-xs text-gray-500 truncate">
                       {w.keywords.length > 0 ? (

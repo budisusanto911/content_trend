@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 
-export type PublishPlatform = "instagram" | "youtube";
+export type PublishPlatform = "instagram" | "youtube" | "facebook" | "threads" | "tiktok";
 
 export interface WatchlistItem {
   id: string;
@@ -141,7 +141,7 @@ export function sanitizeWatchlistInput(body: any, partial = false): Partial<Watc
 
   if (body.platforms !== undefined || !partial) {
     const platforms = (Array.isArray(body.platforms) ? body.platforms : []).filter(
-      (p: any) => p === "instagram" || p === "youtube"
+      (p: any) => p === "instagram" || p === "youtube" || p === "facebook" || p === "threads" || p === "tiktok"
     );
     if (platforms.length === 0) return "Pilih minimal 1 platform";
     out.platforms = platforms;

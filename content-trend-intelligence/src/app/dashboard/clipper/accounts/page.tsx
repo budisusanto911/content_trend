@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Video, Camera, Plus, Key, CheckCircle2, Trash2, Tag } from "lucide-react";
+import { Users, Video, Camera, Plus, Key, CheckCircle2, Trash2, Tag, AtSign, Share2 } from "lucide-react";
 import { NICHE_OPTIONS } from "@/lib/nicheConstants";
+
+type PlatformKey = 'youtube' | 'tiktok' | 'instagram' | 'facebook' | 'threads';
 
 type Profile = {
   id: string;
@@ -12,8 +14,12 @@ type Profile = {
   youtubeConnected: boolean;
   tiktokConnected: boolean;
   instagramConnected: boolean;
+  facebookConnected: boolean;
+  threadsConnected: boolean;
   igUsername?: string | null;
   youtubeChannelTitle?: string | null;
+  facebookPageName?: string | null;
+  threadsUsername?: string | null;
 };
 
 export default function PublisherAccountsPage() {
@@ -35,7 +41,8 @@ export default function PublisherAccountsPage() {
     // Cek jika baru kembali dari OAuth
     const params = new URLSearchParams(window.location.search);
     if (params.get('oauth_success')) {
-      setStatusMessage({ text: "Autentikasi Meta/Instagram berhasil! Akun sudah terhubung.", type: 'success' });
+      const pName = params.get('platform') || 'Sosial Media';
+      setStatusMessage({ text: `Autentikasi ${pName.toUpperCase()} berhasil! Akun sudah terhubung.`, type: 'success' });
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (params.get('oauth_error')) {
       setStatusMessage({ text: "Login gagal: " + params.get('oauth_error'), type: 'error' });
@@ -126,7 +133,7 @@ export default function PublisherAccountsPage() {
     }
   };
 
-  const toggleConnection = async (id: string, platform: 'youtube' | 'tiktok' | 'instagram', currentStatus: boolean) => {
+  const toggleConnection = async (id: string, platform: PlatformKey, currentStatus: boolean) => {
     const key = `${platform}Connected`;
     const newStatus = !currentStatus;
     try {
@@ -147,7 +154,7 @@ export default function PublisherAccountsPage() {
     }
   };
 
-  const openLoginModal = (id: string, platform: 'youtube' | 'tiktok' | 'instagram') => {
+  const openLoginModal = (id: string, platform: PlatformKey) => {
     // Redirect ke sistem OAuth API resmi
     window.location.href = `/api/auth/${platform}?profile_id=${id}`;
   };
@@ -396,11 +403,90 @@ export default function PublisherAccountsPage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5">
-
                         <button 
                           onClick={() => openLoginModal(profile.id, 'instagram')} 
                           className="flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md transition-colors"
                           title="Login Meta OAuth"
+                        >
+                          <Key className="w-3.5 h-3.5" /> OAuth
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Facebook */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-white text-[11px] font-black">f</div>
+                      <span className="text-sm font-bold text-gray-700">Facebook Reels</span>
+                    </div>
+                    {profile.facebookConnected ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> {profile.facebookPageName || "Terhubung"}
+                        </span>
+                        <button 
+                          onClick={() => toggleConnection(profile.id, 'facebook', true)}
+                          className="text-[11px] text-gray-400 hover:text-red-500 font-semibold"
+                          title="Putuskan koneksi"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <button 
+                          onClick={() => toggleConnection(profile.id, 'facebook', false)}
+                          className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 px-2.5 py-1.5 rounded-md transition-colors"
+                          title="Hubungkan langsung"
+                        >
+                          ✓ Hubungkan
+                        </button>
+                        <button 
+                          onClick={() => openLoginModal(profile.id, 'facebook')} 
+                          className="flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md transition-colors"
+                          title="Login Facebook OAuth"
+                        >
+                          <Key className="w-3.5 h-3.5" /> OAuth
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Threads */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center text-white">
+                        <AtSign className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-sm font-bold text-gray-700">Threads</span>
+                    </div>
+                    {profile.threadsConnected ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> {profile.threadsUsername ? `@${profile.threadsUsername}` : "Terhubung"}
+                        </span>
+                        <button 
+                          onClick={() => toggleConnection(profile.id, 'threads', true)}
+                          className="text-[11px] text-gray-400 hover:text-red-500 font-semibold"
+                          title="Putuskan koneksi"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <button 
+                          onClick={() => toggleConnection(profile.id, 'threads', false)}
+                          className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 px-2.5 py-1.5 rounded-md transition-colors"
+                          title="Hubungkan langsung"
+                        >
+                          ✓ Hubungkan
+                        </button>
+                        <button 
+                          onClick={() => openLoginModal(profile.id, 'threads')} 
+                          className="flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md transition-colors"
+                          title="Login Threads OAuth"
                         >
                           <Key className="w-3.5 h-3.5" /> OAuth
                         </button>

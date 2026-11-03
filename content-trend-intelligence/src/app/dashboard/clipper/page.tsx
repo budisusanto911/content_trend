@@ -16,6 +16,7 @@ import {
   Sparkles,
   Camera,
   Send,
+  AtSign,
 } from "lucide-react";
 
 function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -110,13 +111,22 @@ export default function ClipperPage() {
         if (data && data.success && data.profiles) {
           setProfiles(data.profiles);
           if (data.profiles.length > 0) {
-            // Pilih profil yang punya akun Instagram/YouTube atau profil pertama
-            const connected = data.profiles.find((p: any) => p.instagramConnected || p.youtubeConnected) || data.profiles[0];
+            // Pilih profil yang punya akun terhubung atau profil pertama
+            const connected =
+              data.profiles.find(
+                (p: any) =>
+                  p.instagramConnected ||
+                  p.youtubeConnected ||
+                  p.facebookConnected ||
+                  p.threadsConnected
+              ) || data.profiles[0];
             setSelectedProfileId(connected.id);
 
             const activePlatforms: string[] = [];
             if (connected.instagramConnected) activePlatforms.push("instagram");
             if (connected.youtubeConnected) activePlatforms.push("youtube");
+            if (connected.facebookConnected) activePlatforms.push("facebook");
+            if (connected.threadsConnected) activePlatforms.push("threads");
             if (activePlatforms.length > 0) setSelectedPlatforms(activePlatforms);
           }
         }
@@ -355,6 +365,8 @@ export default function ClipperPage() {
                         const conns = [];
                         if (p.instagramConnected) conns.push(`IG: @${p.igUsername || "Terhubung"}`);
                         if (p.youtubeConnected) conns.push(`YT: @${p.youtubeChannelTitle || "Terhubung"}`);
+                        if (p.facebookConnected) conns.push(`FB: ${p.facebookPageName || "Terhubung"}`);
+                        if (p.threadsConnected) conns.push(`Threads: @${p.threadsUsername || "Terhubung"}`);
                         const suffix = conns.length > 0 ? ` (${conns.join(" | ")})` : "";
                         return (
                           <option key={p.id} value={p.id}>
@@ -399,6 +411,38 @@ export default function ClipperPage() {
                       >
                         <YoutubeIcon className="w-3.5 h-3.5" /> YouTube Shorts
                         {selectedProfile?.youtubeConnected && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" title="Akun terhubung" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => togglePlatform("facebook")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                          selectedPlatforms.includes("facebook")
+                            ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-400/50"
+                            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                        }`}
+                        title={selectedProfile?.facebookConnected ? "Facebook terhubung" : "Facebook belum terhubung"}
+                      >
+                        <span className="w-3.5 h-3.5 rounded bg-white/20 flex items-center justify-center font-black text-[10px]">f</span> Facebook Reels
+                        {selectedProfile?.facebookConnected && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" title="Akun terhubung" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => togglePlatform("threads")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                          selectedPlatforms.includes("threads")
+                            ? "bg-gray-900 text-white shadow-sm ring-2 ring-gray-400/50"
+                            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                        }`}
+                        title={selectedProfile?.threadsConnected ? "Threads terhubung" : "Threads belum terhubung"}
+                      >
+                        <AtSign className="w-3.5 h-3.5" /> Threads
+                        {selectedProfile?.threadsConnected && (
                           <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" title="Akun terhubung" />
                         )}
                       </button>
@@ -510,7 +554,16 @@ export default function ClipperPage() {
                             className="inline-flex items-center gap-1 text-blue-600 hover:underline font-bold"
                           >
                             <span>
-                              Lihat di {link.platform === "instagram" ? "Instagram Reels" : link.platform === "youtube" ? "YouTube Shorts" : link.platform}
+                              Lihat di{" "}
+                              {link.platform === "instagram"
+                                ? "Instagram Reels"
+                                : link.platform === "youtube"
+                                ? "YouTube Shorts"
+                                : link.platform === "facebook"
+                                ? "Facebook Reels"
+                                : link.platform === "threads"
+                                ? "Threads"
+                                : link.platform}
                             </span>
                             <ExternalLink className="w-3 h-3" />
                           </a>
@@ -666,6 +719,38 @@ export default function ClipperPage() {
                     {selectedProfile.youtubeConnected ? (
                       <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600" /> @{selectedProfile.youtubeChannelTitle || "Terhubung"}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">
+                        Belum terhubung
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Status Facebook */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5 font-bold text-gray-700">
+                      <span className="w-3.5 h-3.5 bg-blue-600 text-white rounded flex items-center justify-center font-black text-[9px]">f</span> Facebook Reels
+                    </span>
+                    {selectedProfile.facebookConnected ? (
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> {selectedProfile.facebookPageName || "Terhubung"}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">
+                        Belum terhubung
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Status Threads */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5 font-bold text-gray-700">
+                      <AtSign className="w-3.5 h-3.5 text-gray-900" /> Threads
+                    </span>
+                    {selectedProfile.threadsConnected ? (
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> @{selectedProfile.threadsUsername || "Terhubung"}
                       </span>
                     ) : (
                       <span className="text-[11px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">

@@ -3,6 +3,8 @@ import type { PublishLog } from "@/lib/lastClipStore";
 import { settingsStore } from "@/lib/settingsStore";
 import { InstagramPublishService } from "@/services/InstagramPublishService";
 import { YouTubePublishService } from "@/services/YouTubePublishService";
+import { FacebookPublishService } from "@/services/FacebookPublishService";
+import { ThreadsPublishService } from "@/services/ThreadsPublishService";
 import { AIService } from "@/services/AIService";
 
 export function formatCaption(template: string, title: string, hook: string, hashtags: string): string {
@@ -116,7 +118,61 @@ export class PublishService {
       }
     }
 
-    // 3. TikTok (placeholder, sama seperti perilaku sebelumnya)
+    // 3. Facebook Reels / Page Video
+    if (platforms.includes("facebook")) {
+      if (!profile.facebookConnected || !profile.facebookToken || !profile.facebookPageId) {
+        results.push({
+          platform: "facebook",
+          success: false,
+          error:
+            "Akun Facebook Page belum login OAuth di profil ini. Silakan klik tombol OAuth Facebook di menu Publisher Accounts.",
+          publishedAt: new Date().toISOString(),
+        });
+      } else {
+        const fbRes = await FacebookPublishService.publishReel({
+          pageId: profile.facebookPageId,
+          accessToken: profile.facebookToken,
+          videoUrl: `${baseUrl}${clipPath}`,
+          caption,
+        });
+        results.push({
+          platform: "facebook",
+          success: fbRes.success,
+          permalink: fbRes.permalink,
+          error: fbRes.error,
+          publishedAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    // 4. Threads
+    if (platforms.includes("threads")) {
+      if (!profile.threadsConnected || !profile.threadsToken || !profile.threadsUserId) {
+        results.push({
+          platform: "threads",
+          success: false,
+          error:
+            "Akun Threads belum login OAuth di profil ini. Silakan klik tombol OAuth Threads di menu Publisher Accounts.",
+          publishedAt: new Date().toISOString(),
+        });
+      } else {
+        const thRes = await ThreadsPublishService.publishVideo({
+          threadsUserId: profile.threadsUserId,
+          accessToken: profile.threadsToken,
+          videoUrl: `${baseUrl}${clipPath}`,
+          caption,
+        });
+        results.push({
+          platform: "threads",
+          success: thRes.success,
+          permalink: thRes.permalink,
+          error: thRes.error,
+          publishedAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    // 5. TikTok (placeholder, sama seperti perilaku sebelumnya)
     if (platforms.includes("tiktok")) {
       if (!profile.tiktokConnected) {
         results.push({

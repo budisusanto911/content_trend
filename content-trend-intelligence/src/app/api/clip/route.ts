@@ -52,7 +52,10 @@ export async function POST(req: Request) {
           const connectedPlatforms = (platforms as string[]).filter(
             (p) =>
               (p === "instagram" && profile.instagramConnected && profile.instagramToken && profile.instagramUserId) ||
-              (p === "youtube" && profile.youtubeConnected && profile.youtubeToken)
+              (p === "youtube" && profile.youtubeConnected && profile.youtubeToken) ||
+              (p === "facebook" && profile.facebookConnected) ||
+              (p === "threads" && profile.threadsConnected) ||
+              (p === "tiktok" && profile.tiktokConnected)
           );
 
           publishResults = await PublishService.publishClip({

@@ -90,11 +90,17 @@ export async function GET() {
       groqApiKey: envData.GROQ_API_KEY || "",
       instagramClientId: envData.INSTAGRAM_CLIENT_ID || "",
       instagramClientSecret: envData.INSTAGRAM_CLIENT_SECRET || "",
+      facebookAppId: envData.FACEBOOK_APP_ID || "",
+      facebookAppSecret: envData.FACEBOOK_APP_SECRET || "",
+      threadsAppId: envData.THREADS_APP_ID || "",
+      threadsAppSecret: envData.THREADS_APP_SECRET || "",
       nextPublicBaseUrl: envData.NEXT_PUBLIC_BASE_URL || "",
       hasYoutubeKey: Boolean(envData.YOUTUBE_API_KEY && envData.YOUTUBE_API_KEY !== "your_youtube_api_key_here"),
       hasAiKey: Boolean(envData.AI_API_KEY),
       hasGroqKey: Boolean(envData.GROQ_API_KEY),
       hasInstagramConfig: Boolean(envData.INSTAGRAM_CLIENT_ID && envData.INSTAGRAM_CLIENT_SECRET),
+      hasFacebookConfig: Boolean(envData.FACEBOOK_APP_ID && envData.FACEBOOK_APP_SECRET),
+      hasThreadsConfig: Boolean(envData.THREADS_APP_ID && envData.THREADS_APP_SECRET),
     };
 
     const connectedProfiles = profiles.map((p) => ({
@@ -104,6 +110,10 @@ export async function GET() {
       igUsername: p.igUsername || null,
       youtubeConnected: Boolean(p.youtubeConnected),
       youtubeChannelTitle: p.youtubeChannelTitle || null,
+      facebookConnected: Boolean(p.facebookConnected),
+      facebookPageName: p.facebookPageName || null,
+      threadsConnected: Boolean(p.threadsConnected),
+      threadsUsername: p.threadsUsername || null,
     }));
 
     return NextResponse.json({
@@ -146,6 +156,10 @@ export async function POST(req: Request) {
       if (body.envUpdates.groqApiKey !== undefined) updates.GROQ_API_KEY = body.envUpdates.groqApiKey;
       if (body.envUpdates.instagramClientId !== undefined) updates.INSTAGRAM_CLIENT_ID = body.envUpdates.instagramClientId;
       if (body.envUpdates.instagramClientSecret !== undefined) updates.INSTAGRAM_CLIENT_SECRET = body.envUpdates.instagramClientSecret;
+      if (body.envUpdates.facebookAppId !== undefined) updates.FACEBOOK_APP_ID = body.envUpdates.facebookAppId;
+      if (body.envUpdates.facebookAppSecret !== undefined) updates.FACEBOOK_APP_SECRET = body.envUpdates.facebookAppSecret;
+      if (body.envUpdates.threadsAppId !== undefined) updates.THREADS_APP_ID = body.envUpdates.threadsAppId;
+      if (body.envUpdates.threadsAppSecret !== undefined) updates.THREADS_APP_SECRET = body.envUpdates.threadsAppSecret;
       if (body.envUpdates.nextPublicBaseUrl !== undefined) updates.NEXT_PUBLIC_BASE_URL = body.envUpdates.nextPublicBaseUrl;
 
       if (Object.keys(updates).length > 0) {

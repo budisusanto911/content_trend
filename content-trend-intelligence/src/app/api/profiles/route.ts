@@ -8,7 +8,22 @@ export async function GET() {
   try {
     const all = await profileStore.getProfiles();
     // Jangan kirim token/password ke browser
-    const profiles = all.map(({ instagramToken, igPassword, tiktokCookies, youtubeToken, youtubeRefreshToken, ...safe }) => safe);
+    const profiles = all.map(
+      ({
+        instagramToken,
+        igPassword,
+        tiktokCookies,
+        youtubeToken,
+        youtubeRefreshToken,
+        facebookToken,
+        threadsToken,
+        ...safe
+      }) => ({
+        ...safe,
+        facebookConnected: Boolean(safe.facebookConnected),
+        threadsConnected: Boolean(safe.threadsConnected),
+      })
+    );
     return NextResponse.json({ success: true, profiles });
   } catch (error) {
     console.error("Error fetching profiles:", error);
@@ -26,6 +41,8 @@ export async function POST(req: Request) {
       youtubeConnected: data.youtubeConnected || false,
       tiktokConnected: data.tiktokConnected || false,
       instagramConnected: data.instagramConnected || false,
+      facebookConnected: data.facebookConnected || false,
+      threadsConnected: data.threadsConnected || false,
     });
     return NextResponse.json({ success: true, profile });
   } catch (error) {

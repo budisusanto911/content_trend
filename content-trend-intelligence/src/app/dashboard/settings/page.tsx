@@ -48,6 +48,8 @@ export default function SettingsPage() {
     ai: false,
     groq: false,
     igSecret: false,
+    fbSecret: false,
+    threadsSecret: false,
   });
 
   // Settings State with all features
@@ -85,11 +87,17 @@ export default function SettingsPage() {
     groqApiKey: "",
     instagramClientId: "",
     instagramClientSecret: "",
+    facebookAppId: "",
+    facebookAppSecret: "",
+    threadsAppId: "",
+    threadsAppSecret: "",
     nextPublicBaseUrl: "",
     hasYoutubeKey: false,
     hasAiKey: false,
     hasGroqKey: false,
     hasInstagramConfig: false,
+    hasFacebookConfig: false,
+    hasThreadsConfig: false,
   });
 
   // Connected Profiles, Storage Stats & Background Job Status
@@ -149,6 +157,10 @@ export default function SettingsPage() {
             groqApiKey: envKeys.groqApiKey,
             instagramClientId: envKeys.instagramClientId,
             instagramClientSecret: envKeys.instagramClientSecret,
+            facebookAppId: envKeys.facebookAppId,
+            facebookAppSecret: envKeys.facebookAppSecret,
+            threadsAppId: envKeys.threadsAppId,
+            threadsAppSecret: envKeys.threadsAppSecret,
             nextPublicBaseUrl: envKeys.nextPublicBaseUrl,
           },
         }),
@@ -1098,7 +1110,7 @@ export default function SettingsPage() {
                 Public Base URL (NEXT_PUBLIC_BASE_URL)
               </label>
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-blue-600" /> Wajib untuk Instagram Reels
+                <ShieldCheck className="w-3 h-3 text-blue-600" /> Wajib untuk Instagram, Facebook & Threads
               </span>
             </div>
             <input
@@ -1109,7 +1121,101 @@ export default function SettingsPage() {
               className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-mono text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
             />
             <p className="text-[11px] text-gray-400">
-              Domain publik aktif (Ngrok atau domain server). Meta Graph API membutuhkan URL publik ini untuk mengunduh video klip saat publish Reels.
+              Domain publik aktif (Ngrok atau domain server). Meta Graph API membutuhkan URL publik ini untuk mengunduh video klip saat publish Reels & Threads.
+            </p>
+          </div>
+
+          {/* 5. Facebook OAuth Config */}
+          <div className="p-5 rounded-2xl bg-gray-50 border border-gray-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                Facebook OAuth App (FACEBOOK_APP_ID & SECRET)
+              </label>
+              <span
+                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                  envKeys.hasFacebookConfig
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${envKeys.hasFacebookConfig ? "bg-emerald-500" : "bg-amber-500"}`} />
+                {envKeys.hasFacebookConfig ? "Siap OAuth" : "Belum Dikonfigurasi"}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                type="text"
+                value={envKeys.facebookAppId}
+                onChange={(e) => setEnvKeys({ ...envKeys, facebookAppId: e.target.value })}
+                placeholder="Facebook App ID"
+                className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-mono text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              />
+              <div className="relative">
+                <input
+                  type={showKeys.fbSecret ? "text" : "password"}
+                  value={envKeys.facebookAppSecret}
+                  onChange={(e) => setEnvKeys({ ...envKeys, facebookAppSecret: e.target.value })}
+                  placeholder="Facebook App Secret"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-mono text-gray-900 pr-10 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => toggleVisibility("fbSecret")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                >
+                  {showKeys.fbSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-400">
+              Digunakan untuk login OAuth Facebook Page dan auto-publish Facebook Reels.
+            </p>
+          </div>
+
+          {/* 6. Threads OAuth Config */}
+          <div className="p-5 rounded-2xl bg-gray-50 border border-gray-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                Threads OAuth App (THREADS_APP_ID & SECRET)
+              </label>
+              <span
+                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                  envKeys.hasThreadsConfig
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${envKeys.hasThreadsConfig ? "bg-emerald-500" : "bg-amber-500"}`} />
+                {envKeys.hasThreadsConfig ? "Siap OAuth" : "Belum Dikonfigurasi"}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                type="text"
+                value={envKeys.threadsAppId}
+                onChange={(e) => setEnvKeys({ ...envKeys, threadsAppId: e.target.value })}
+                placeholder="Threads App ID"
+                className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-mono text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              />
+              <div className="relative">
+                <input
+                  type={showKeys.threadsSecret ? "text" : "password"}
+                  value={envKeys.threadsAppSecret}
+                  onChange={(e) => setEnvKeys({ ...envKeys, threadsAppSecret: e.target.value })}
+                  placeholder="Threads App Secret"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-mono text-gray-900 pr-10 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => toggleVisibility("threadsSecret")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                >
+                  {showKeys.threadsSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-400">
+              Digunakan untuk login OAuth Meta Threads (Use case: Access the Threads API) dan auto-publish video ke Threads.
             </p>
           </div>
         </div>
@@ -1158,6 +1264,18 @@ export default function SettingsPage() {
                     <span className="text-gray-500">YouTube:</span>
                     <span className={`font-bold ${p.youtubeConnected ? "text-red-600" : "text-gray-400"}`}>
                       {p.youtubeConnected ? `@${p.youtubeChannelTitle || "Terhubung"}` : "Belum Terhubung"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Facebook:</span>
+                    <span className={`font-bold ${p.facebookConnected ? "text-blue-600" : "text-gray-400"}`}>
+                      {p.facebookConnected ? p.facebookPageName || "Terhubung" : "Belum Terhubung"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Threads:</span>
+                    <span className={`font-bold ${p.threadsConnected ? "text-gray-900" : "text-gray-400"}`}>
+                      {p.threadsConnected ? `@${p.threadsUsername || "Terhubung"}` : "Belum Terhubung"}
                     </span>
                   </div>
                 </div>

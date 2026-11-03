@@ -168,6 +168,141 @@ export async function GET(req: Request) {
     }
   }
 
+  if (platform === 'facebook') {
+    try {
+      const clientId = process.env.FACEBOOK_APP_ID;
+      const clientSecret = process.env.FACEBOOK_APP_SECRET;
+      if (!clientId || !clientSecret) {
+        throw new Error('FACEBOOK_APP_ID / FACEBOOK_APP_SECRET belum di-set di .env');
+      }
+
+      // 1. Tukar code dengan short-lived user access token
+      const tokenUrl = `https://graph.facebook.com/v21.0/oauth/access_token?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${encodeURIComponent(clientSecret)}&code=${encodeURIComponent(code)}`;
+      const shortRes = await fetch(tokenUrl);
+      const shortData = await shortRes.json();
+      if (!shortRes.ok || !shortData.access_token) {
+        throw new Error(shortData.error?.message || 'Gagal menukar code dengan token Facebook');
+      }
+
+      // 2. Tukar ke long-lived user access token (60 hari)
+      let userToken: string = shortData.access_token;
+      let expiresAt: string | null = null;
+      const longUrl = `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}&fb_exchange_token=${encodeURIComponent(userToken)}`;
+      const longRes = await fetch(longUrl);
+      const longData = await longRes.json();
+      if (longRes.ok && longData.access_token) {
+        userToken = longData.access_token;
+        if (longData.expires_in) {
+          expiresAt = new Date(Date.now() + longData.expires_in * 1000).toISOString();
+        }
+      }
+
+      // 3. Ambil daftar Facebook Pages milik user (/me/accounts)
+      let pageId: string | null = null;
+      let pageName: string | null = null;
+      let pageToken: string = userToken;
+
+      const pagesRes = await fetch(
+        `https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token&access_token=${encodeURIComponent(userToken)}`
+      );
+      const pagesData = await pagesRes.json();
+      if (pagesRes.ok && Array.isArray(pagesData.data) && pagesData.data.length > 0) {
+        pageId = String(pagesData.data[0].id);
+        pageName = pagesData.data[0].name || null;
+        pageToken = pagesData.data[0].access_token || userToken;
+      } else {
+        // Fallback ke profil user jika belum ada Facebook Page
+        const meRes = await fetch(
+          `https://graph.facebook.com/v21.0/me?fields=id,name&access_token=${encodeURIComponent(userToken)}`
+        );
+        const meData = await meRes.json();
+        if (meRes.ok) {
+          pageId = String(meData.id || '');
+          pageName = meData.name || 'Facebook Account';
+        }
+      }
+
+      if (profileId !== 'unknown') {
+        await profileStore.updateProfile(profileId, {
+          facebookConnected: true,
+          facebookToken: pageToken,
+          facebookPageId: pageId,
+          facebookPageName: pageName,
+          facebookTokenExpiresAt: expiresAt,
+        });
+      }
+
+      return NextResponse.redirect(`${accountsUrl}?oauth_success=true&platform=facebook`);
+    } catch (e: any) {
+      console.error('Facebook OAuth gagal:', e);
+      return NextResponse.redirect(`${accountsUrl}?oauth_error=${encodeURIComponent(e.message || 'Facebook OAuth gagal')}`);
+    }
+  }
+
+  if (platform === 'threads') {
+    try {
+      const clientId = process.env.THREADS_APP_ID;
+      const clientSecret = process.env.THREADS_APP_SECRET;
+      if (!clientId || !clientSecret) {
+        throw new Error('THREADS_APP_ID / THREADS_APP_SECRET belum di-set di .env');
+      }
+
+      const cleanCode = code.replace(/#_$/, '');
+
+      // 1. Tukar code dengan short-lived Threads access token
+      const form = new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        grant_type: 'authorization_code',
+        redirect_uri: redirectUri,
+        code: cleanCode,
+      });
+      const shortRes = await fetch('https://graph.threads.net/oauth/access_token', { method: 'POST', body: form });
+      const shortData = await shortRes.json();
+      if (!shortRes.ok || !shortData.access_token) {
+        throw new Error(shortData.error_message || shortData.error?.message || 'Gagal menukar code dengan token Threads');
+      }
+
+      // 2. Tukar ke long-lived token (60 hari)
+      let accessToken: string = shortData.access_token;
+      let expiresAt: string | null = null;
+      const longRes = await fetch(
+        `https://graph.threads.net/access_token?grant_type=th_exchange_token&client_secret=${encodeURIComponent(clientSecret)}&access_token=${encodeURIComponent(accessToken)}`
+      );
+      const longData = await longRes.json();
+      if (longRes.ok && longData.access_token) {
+        accessToken = longData.access_token;
+        if (longData.expires_in) {
+          expiresAt = new Date(Date.now() + longData.expires_in * 1000).toISOString();
+        }
+      }
+
+      // 3. Ambil username akun Threads
+      const meRes = await fetch(
+        `https://graph.threads.net/v1.0/me?fields=id,username&access_token=${encodeURIComponent(accessToken)}`
+      );
+      const me = await meRes.json();
+      if (!meRes.ok) {
+        throw new Error(me.error?.message || 'Gagal mengambil profil Threads');
+      }
+
+      if (profileId !== 'unknown') {
+        await profileStore.updateProfile(profileId, {
+          threadsConnected: true,
+          threadsToken: accessToken,
+          threadsUserId: String(me.id || shortData.user_id || ''),
+          threadsUsername: me.username || null,
+          threadsTokenExpiresAt: expiresAt,
+        });
+      }
+
+      return NextResponse.redirect(`${accountsUrl}?oauth_success=true&platform=threads`);
+    } catch (e: any) {
+      console.error('Threads OAuth gagal:', e);
+      return NextResponse.redirect(`${accountsUrl}?oauth_error=${encodeURIComponent(e.message || 'Threads OAuth gagal')}`);
+    }
+  }
+
   // Fallback untuk platform lain (misal: TikTok)
   if (profileId !== 'unknown') {
     try {
