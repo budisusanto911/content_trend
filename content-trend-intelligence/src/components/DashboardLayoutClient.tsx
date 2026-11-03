@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   Bot,
@@ -17,8 +17,11 @@ import {
   Users,
   Menu,
   X,
+  LogOut,
+  UserCheck,
 } from "lucide-react";
 import { ManualScrapeButton } from "@/app/dashboard/ManualScrapeButton";
+import type { SessionUser } from "@/lib/authStore";
 
 interface NavLinkItem {
   href: string;
@@ -48,9 +51,26 @@ const NAV_ITEMS: NavEntry[] = [
   { href: "/dashboard/clipper/accounts", label: "Publisher Accounts", icon: Users },
 ];
 
-export function DashboardLayoutClient({ children }: { children: ReactNode }) {
+export function DashboardLayoutClient({
+  children,
+  user,
+}: {
+  children: ReactNode;
+  user?: SessionUser | null;
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/user-auth/logout", { method: "POST" });
+      router.replace("/login");
+      router.refresh();
+    } catch (e) {
+      window.location.href = "/login";
+    }
+  };
 
   // Close mobile drawer when route changes
   useEffect(() => {
@@ -175,6 +195,19 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
 
             {/* Drawer Footer Actions */}
             <div className="p-4 border-t border-gray-100 flex flex-col gap-2 bg-gray-50/50">
+              {user && (
+                <div className="px-3.5 py-2.5 rounded-xl bg-white border border-gray-100 flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-black text-xs flex items-center justify-center shrink-0">
+                      {user.name.slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-extrabold text-gray-900 truncate">{user.name}</p>
+                      <p className="text-[10px] text-gray-400 truncate">@{user.username}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <ManualScrapeButton forceShowLabel={true} />
               <Link
                 href="/dashboard/settings"
@@ -188,6 +221,14 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
                 <Settings size={18} className="text-gray-400" />
                 <span>Settings</span>
               </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all text-left"
+              >
+                <LogOut size={18} className="text-red-500" />
+                <span>Keluar (Logout)</span>
+              </button>
             </div>
           </div>
         </div>
@@ -240,6 +281,17 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-3 lg:p-4 border-t border-gray-50 flex flex-col gap-2">
+          {user && (
+            <div className="hidden lg:flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-gray-50 border border-gray-100 mb-1">
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-black text-xs flex items-center justify-center shrink-0">
+                {user.name.slice(0, 1).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-extrabold text-gray-900 truncate">{user.name}</p>
+                <p className="text-[10px] text-gray-400 truncate">@{user.username}</p>
+              </div>
+            </div>
+          )}
           <ManualScrapeButton />
           <Link
             href="/dashboard/settings"
@@ -257,6 +309,19 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
               Settings
             </span>
           </Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Keluar (Logout)"
+            className="flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl transition-all duration-200 group text-red-500 hover:bg-red-50 hover:text-red-700 text-left"
+          >
+            <div className="shrink-0 text-red-500 group-hover:text-red-700">
+              <LogOut size={20} />
+            </div>
+            <span className="font-semibold text-sm hidden lg:block">
+              Keluar
+            </span>
+          </button>
         </div>
       </aside>
 

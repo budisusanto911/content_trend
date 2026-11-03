@@ -34,12 +34,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Environment variables
+# Environment variables & sensitive user data
 .env
 .env*.local
 .env.production
 .env.development
 !.env.example
+**/data/users.json
+**/data/profiles.json
 
 # Large media files (videos & audio)
 *.mp4
