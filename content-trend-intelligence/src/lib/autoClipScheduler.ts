@@ -392,6 +392,8 @@ class AutoClipScheduler {
           hashtags: run.clip.hashtags,
           startTime: run.clip.startTime,
           endTime: run.clip.endTime,
+          thread: run.clip.thread,
+          communityPost: run.clip.communityPost,
         },
       });
       this.log("clip", "success", `[${item.title}] Klip siap: ${run.clip.title}`);

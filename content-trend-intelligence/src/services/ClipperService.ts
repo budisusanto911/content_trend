@@ -18,6 +18,8 @@ export interface ClipRunResult {
     startTime?: string;
     endTime?: string;
     sourceUrl?: string;
+    thread?: { threads: string[]; full_text: string };
+    communityPost?: { post_text: string; poll_question: string; poll_options: string[] };
   };
 }
 
@@ -115,6 +117,8 @@ export class ClipperService {
               startTime: meta.startTime,
               endTime: meta.endTime,
               sourceUrl: meta.sourceUrl,
+              thread: meta.thread,
+              communityPost: meta.communityPost,
             };
           }
         } catch (e) {

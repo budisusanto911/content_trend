@@ -21,6 +21,8 @@ export interface ClipJobClip {
   hashtags?: string[];
   startTime?: string;
   endTime?: string;
+  thread?: { threads: string[]; full_text: string };
+  communityPost?: { post_text: string; poll_question: string; poll_options: string[] };
 }
 
 export interface ClipJob {
