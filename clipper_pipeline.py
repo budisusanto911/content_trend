@@ -628,6 +628,42 @@ def run_full_automation(youtube_url, profile_id=1):
             settings=app_settings
         )
 
+        # Smart Audio Suite: Pasang BGM cerdas dengan Auto-Ducking
+        try:
+            from toolkit.audio_enhancer import mix_smart_audio_with_ducking
+            temp_ducked = final_path + ".ducked.mp4"
+            mix_smart_audio_with_ducking(final_path, temp_ducked)
+            if os.path.exists(temp_ducked) and os.path.getsize(temp_ducked) > 1000:
+                os.replace(temp_ducked, final_path)
+                log("Smart Audio: BGM & Auto-Ducking berhasil diaplikasikan.")
+        except Exception as e_audio:
+            log(f"⚠️ Gagal audio ducking ({e_audio}), melanjutkan dengan audio standar.")
+
+        # Omnichannel Content Repurposing: Buat thread teks dan postingan komunitas
+        thread_data = None
+        community_data = None
+        try:
+            from toolkit.repurposer import generate_viral_thread, generate_youtube_community_post
+            thread_data = generate_viral_thread(
+                moment.get("title", "Momen Pilihan AI"),
+                moment.get("hook", ""),
+                transcript=moment.get("title", "")
+            )
+            community_data = generate_youtube_community_post(
+                moment.get("title", "Momen Pilihan AI"),
+                moment.get("hook", "")
+            )
+            log("Omnichannel: Thread viral & YouTube Community post berhasil digenerate.")
+        except Exception as e_repo:
+            log(f"⚠️ Gagal repurpose konten ({e_repo}).")
+
+        # Analytics Feedback: Update ringkasan ranking
+        try:
+            from toolkit.analytics_tracker import update_analytics_summary
+            update_analytics_summary()
+        except Exception:
+            pass
+
         # Cleanup subtitle temps
         for sub_tmp in ["temp_subtitles.ass", "temp_yt_sub.id.vtt", "temp_yt_sub.en.vtt", "temp_yt_sub.vtt"]:
             if os.path.exists(sub_tmp):
@@ -657,6 +693,8 @@ def run_full_automation(youtube_url, profile_id=1):
             "startTime": moment.get("start", ""),
             "endTime": moment.get("end", ""),
             "sourceUrl": youtube_url,
+            "thread": thread_data,
+            "communityPost": community_data,
             "updatedAt": datetime.now().isoformat(),
             "published": False,
             "publishedTo": []
