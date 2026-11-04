@@ -45,11 +45,28 @@ export class ClipperService {
   }
 
   private static spawnPipeline(url: string): Promise<ClipRunResult> {
-    const scriptPath = path.join(process.cwd(), "..", "clipper_pipeline.py");
-    const metaPath = path.join(process.cwd(), "data", "last_clip.json");
+    const scriptCandidates = [
+      path.join(process.cwd(), "clipper_pipeline.py"),
+      path.join(process.cwd(), "..", "clipper_pipeline.py"),
+    ];
+    const scriptPath = scriptCandidates.find((p) => fs.existsSync(p)) || scriptCandidates[0];
+    const scriptDir = fs.existsSync(scriptPath) ? path.dirname(scriptPath) : process.cwd();
+
+    const metaCandidates = [
+      path.join(process.cwd(), "data", "last_clip.json"),
+      path.join(process.cwd(), "content-trend-intelligence", "data", "last_clip.json"),
+      path.join(scriptDir, "data", "last_clip.json"),
+      path.join(scriptDir, "content-trend-intelligence", "data", "last_clip.json"),
+    ];
+
+    const pythonCandidates = [
+      path.join(scriptDir, "venv", "bin", "python3"),
+      path.join(process.cwd(), "venv", "bin", "python3"),
+    ];
+    const pythonBin = pythonCandidates.find((p) => fs.existsSync(p)) || "python3";
     const startedAt = Date.now();
 
-    console.log("[Clipper] Menjalankan AI Clipper Pipeline:", "python3", scriptPath, url);
+    console.log("[Clipper] Menjalankan AI Clipper Pipeline:", pythonBin, scriptPath, url);
     globalThis.__clipperBusy = true;
 
     return new Promise<ClipRunResult>((resolve) => {
@@ -59,7 +76,8 @@ export class ClipperService {
         resolve(r);
       };
 
-      const pyProcess = spawn("python3", [scriptPath, url], {
+      const pyProcess = spawn(pythonBin, [scriptPath, url], {
+        cwd: scriptDir,
         env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONWARNINGS: "ignore" },
       });
 
@@ -76,13 +94,16 @@ export class ClipperService {
 
       pyProcess.on("close", (code) => {
         if (code !== 0) {
-          done({ success: false, code, logs, error: `Python script gagal (code: ${code})` });
+          const detail = logs.trim() ? `: ${logs.trim().split("\n").slice(-3).join(" ")}` : "";
+          done({ success: false, code, logs, error: `Python script gagal (code: ${code})${detail}` });
           return;
         }
 
         let clip: ClipRunResult["clip"];
         try {
-          if (fs.existsSync(metaPath) && fs.statSync(metaPath).mtimeMs >= startedAt - 1000) {
+          const metaPath = metaCandidates.find((p) => fs.existsSync(p) && fs.statSync(p).mtimeMs >= startedAt - 2000)
+            || metaCandidates.find((p) => fs.existsSync(p));
+          if (metaPath) {
             const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
             clip = {
               outputFile: meta.outputFile,

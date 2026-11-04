@@ -9,6 +9,9 @@ import warnings
 warnings.filterwarnings("ignore")
 
 load_dotenv(dotenv_path="content-trend-intelligence/.env")
+load_dotenv(dotenv_path=".env")
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "content-trend-intelligence", ".env"))
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 # ==========================================
 # CONFIGURATION & API KEYS
@@ -590,7 +593,12 @@ def run_full_automation(youtube_url, profile_id=1):
         moment = analyze_with_ai(audio_file, settings=app_settings)
         raw_clip = download_and_cut(youtube_url, moment["start"], moment["end"], "temp_raw.mp4")
         
-        output_dir = os.path.join("public", "clips")
+        if os.path.exists("content-trend-intelligence/public"):
+            output_dir = os.path.join("content-trend-intelligence", "public", "clips")
+        elif os.path.exists(os.path.join(os.path.dirname(__file__), "content-trend-intelligence", "public")):
+            output_dir = os.path.join(os.path.dirname(__file__), "content-trend-intelligence", "public", "clips")
+        else:
+            output_dir = os.path.join("public", "clips")
         os.makedirs(output_dir, exist_ok=True)
         final_path = os.path.join(output_dir, unique_filename)
         fallback_path = os.path.join(output_dir, "final_ready_to_upload.mp4")
@@ -633,8 +641,12 @@ def run_full_automation(youtube_url, profile_id=1):
         shutil.copyfile(final_path, fallback_path)
 
         # 4. Simpan metadata klip ke data/last_clip.json agar langsung tampil di UI & persist saat refresh
-        data_dir = "data"
-        os.makedirs(data_dir, exist_ok=True)
+        data_dirs = [
+            "data",
+            "content-trend-intelligence/data",
+            os.path.join(os.path.dirname(__file__), "data"),
+            os.path.join(os.path.dirname(__file__), "content-trend-intelligence", "data"),
+        ]
         clip_meta = {
             "outputFile": f"/clips/{unique_filename}",
             "title": moment.get("title", "Momen Pilihan AI"),
@@ -649,8 +661,13 @@ def run_full_automation(youtube_url, profile_id=1):
             "published": False,
             "publishedTo": []
         }
-        with open(os.path.join(data_dir, "last_clip.json"), "w", encoding="utf-8") as f:
-            json.dump(clip_meta, f, indent=2)
+        for d in data_dirs:
+            try:
+                os.makedirs(d, exist_ok=True)
+                with open(os.path.join(d, "last_clip.json"), "w", encoding="utf-8") as f:
+                    json.dump(clip_meta, f, indent=2)
+            except Exception:
+                pass
             
         log(f"Fase 4: Video baru ({unique_filename}) berhasil dipolish dan siap dipublish!")
         print(f"\n🎉 SEMUA FASE SELESAI. SISTEM BERHASIL BERJALAN OTOMATIS. File di: {final_path}")
