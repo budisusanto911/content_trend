@@ -155,3 +155,10 @@ def generate_faceless_video(topic, output_dir=None):
         "filePath": final_output
     }
 
+if __name__ == "__main__":
+    import sys
+    topic_arg = sys.argv[1] if len(sys.argv) > 1 else "Tren Teknologi AI Terkini"
+    res = generate_faceless_video(topic_arg)
+    print(json.dumps(res, indent=2))
+
+

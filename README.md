@@ -95,12 +95,18 @@ source venv/bin/activate  # Untuk Linux/macOS
 # venv\Scripts\activate   # Untuk Windows
 
 # Install package Python yang diperlukan
-pip install yt-dlp python-dotenv requests google-genai
+pip install -r requirements.txt
 ```
 
 Jalankan clipper secara langsung via terminal:
 ```bash
 python3 clipper_pipeline.py "https://www.youtube.com/watch?v=VIDEO_ID"
+```
+
+### 4. Menjalankan Master Test Suite Otomasi
+Seluruh modul otomasi (Smart Audio, Face Tracking, Omnichannel Repurposer, Faceless Engine, dan Analytics Feedback Loop) dilengkapi pengujian mandiri:
+```bash
+python3 toolkit/tests/run_all_tests.py
 ```
 
 ---

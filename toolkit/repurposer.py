@@ -111,3 +111,12 @@ def generate_dual_language_ass(source_ass_file, output_ass_file, translate_map=N
 
     return output_ass_file
 
+if __name__ == "__main__":
+    import sys
+    title_arg = sys.argv[1] if len(sys.argv) > 1 else "Inovasi AI 2026"
+    hook_arg = sys.argv[2] if len(sys.argv) > 2 else "TERNYATA INI RAHASIA BESARNYA!"
+    res_thread = generate_viral_thread(title_arg, hook_arg)
+    res_comm = generate_youtube_community_post(title_arg, hook_arg)
+    print(json.dumps({"thread": res_thread, "community": res_comm}, indent=2))
+
+
