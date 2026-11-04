@@ -149,3 +149,4 @@ def apply_retention_zoom_punch(input_video, output_video, punch_timestamps=None)
         cmd_fallback = ["ffmpeg", "-y", "-i", input_video, "-c", "copy", output_video]
         subprocess.run(cmd_fallback, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return output_video
+

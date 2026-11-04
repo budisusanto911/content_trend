@@ -131,3 +131,4 @@ def reframe_video_to_vertical(input_video, output_video, duration=30):
         ]
         subprocess.run(fallback_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return output_video
+

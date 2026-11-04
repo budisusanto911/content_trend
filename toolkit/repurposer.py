@@ -110,3 +110,4 @@ def generate_dual_language_ass(source_ass_file, output_ass_file, translate_map=N
         f.write("\n".join(new_lines))
 
     return output_ass_file
+

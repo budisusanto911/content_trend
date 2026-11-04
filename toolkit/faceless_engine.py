@@ -154,3 +154,4 @@ def generate_faceless_video(topic, output_dir=None):
         "duration": dur,
         "filePath": final_output
     }
+
