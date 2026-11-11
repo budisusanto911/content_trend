@@ -1,0 +1,14 @@
+{
+  "post_tool_execution": [
+    {
+      "trigger": {
+        "tools": ["write_to_file", "replace_file_content"]
+      },
+      "action": {
+        "type": "command",
+        "command": "npm run lint -- --fix || true"
+      },
+      "description": "Run ESLint to fix auto-fixable issues after modifying files."
+    }
+  ]
+}
