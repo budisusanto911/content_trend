@@ -1,0 +1,17 @@
+.env
+.env.local
+.env.production
+cookies.txt
+youtube_token.json
+instagram_token.json
+data/
+*.log
+node_modules/
+.next/
+out/
+dist/
+build/
+*.pid
+.DS_Store
+clipper_debug.log
+*.tmp

@@ -1,0 +1,175 @@
+import fs from "fs";
+import path from "path";
+import crypto from "crypto";
+
+export type PublishPlatform = "instagram" | "youtube" | "facebook" | "threads" | "tiktok";
+
+export interface WatchlistItem {
+  id: string;
+  /** Label judul / target, misal "Gaming Shorts" */
+  title: string;
+  /** Kategori / Niche target (misal: "Gaming", "Entertainment", "Podcast & Talkshow", dll.) */
+  niche?: string;
+  /** Kata kunci pencocokan opsional (jika kosong, ambil semua video di niche ini) */
+  keywords: string[];
+  /** Opsional: hanya cocokkan video dari channel/creator ini */
+  matchCreator?: string;
+  /** Akun tujuan (PublisherProfile id) */
+  profileId: string;
+  platforms: PublishPlatform[];
+  enabled: boolean;
+  /** Jam-jam publish harian, format HH:mm (waktu lokal server), bisa multiple */
+  publishTimes: string[];
+  /** Jika true, klip harus di-approve manual sebelum ikut auto-publish */
+  requireApproval: boolean;
+  /** Batas klip baru yang dibuat per hari untuk judul ini */
+  maxClipsPerDay: number;
+  /** YYYY-MM-DD terakhir kali publish (kunci "1x sehari") */
+  lastPublishedDate?: string | null;
+  createdAt: string;
+}
+
+export type WatchlistInput = Omit<WatchlistItem, "id" | "createdAt" | "lastPublishedDate">;
+
+class WatchlistStore {
+  private filePath: string;
+
+  constructor() {
+    const dataDir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) {
+      try {
+        fs.mkdirSync(dataDir, { recursive: true });
+      } catch (e) {
+        console.error("Gagal membuat folder data:", e);
+      }
+    }
+    this.filePath = path.join(dataDir, "watchlist.json");
+  }
+
+  private readAll(): WatchlistItem[] {
+    try {
+      if (!fs.existsSync(this.filePath)) return [];
+      const raw = fs.readFileSync(this.filePath, "utf8");
+      return JSON.parse(raw || "[]");
+    } catch (e) {
+      console.error("Gagal membaca watchlist.json:", e);
+      return [];
+    }
+  }
+
+  private writeAll(items: WatchlistItem[]) {
+    try {
+      fs.writeFileSync(this.filePath, JSON.stringify(items, null, 2), "utf8");
+    } catch (e) {
+      console.error("Gagal menyimpan watchlist.json:", e);
+    }
+  }
+
+  list(): WatchlistItem[] {
+    return this.readAll();
+  }
+
+  get(id: string): WatchlistItem | undefined {
+    return this.readAll().find((w) => w.id === id);
+  }
+
+  create(input: WatchlistInput): WatchlistItem {
+    const items = this.readAll();
+    const item: WatchlistItem = {
+      ...input,
+      publishTimes: input.publishTimes || ["19:00"],
+      id: crypto.randomUUID(),
+      lastPublishedDate: null,
+      createdAt: new Date().toISOString(),
+    };
+    items.unshift(item);
+    this.writeAll(items);
+    return item;
+  }
+
+  update(id: string, patch: Partial<WatchlistItem>): WatchlistItem | null {
+    const items = this.readAll();
+    const idx = items.findIndex((w) => w.id === id);
+    if (idx === -1) return null;
+    items[idx] = { ...items[idx], ...patch, id };
+    // Pastikan publishTimes selalu ada array
+    if (!items[idx].publishTimes) items[idx].publishTimes = ["19:00"];
+    this.writeAll(items);
+    return items[idx];
+  }
+
+  delete(id: string): boolean {
+    const items = this.readAll();
+    const filtered = items.filter((w) => w.id !== id);
+    this.writeAll(filtered);
+    return filtered.length !== items.length;
+  }
+}
+
+/**
+ * Normalisasi & validasi input watchlist dari body request.
+ * Mengembalikan string error jika tidak valid.
+ */
+export function sanitizeWatchlistInput(body: any, partial = false): Partial<WatchlistInput> | string {
+  const out: Partial<WatchlistInput> = {};
+
+  if (body.niche !== undefined || !partial) {
+    out.niche = String(body.niche ?? "").trim() || undefined;
+  }
+
+  if (body.title !== undefined || !partial) {
+    let title = String(body.title ?? "").trim();
+    if (!title && out.niche) {
+      title = out.niche;
+    }
+    if (!title) return "Kategori / Niche atau Label wajib diisi";
+    out.title = title;
+  }
+
+  if (body.keywords !== undefined || !partial) {
+    const raw = Array.isArray(body.keywords) ? body.keywords : String(body.keywords ?? "").split(",");
+    const keywords = raw.map((k: any) => String(k).trim()).filter(Boolean);
+    out.keywords = keywords;
+  }
+
+  if (body.matchCreator !== undefined) {
+    out.matchCreator = String(body.matchCreator ?? "").trim() || undefined;
+  }
+
+  if (body.profileId !== undefined || !partial) {
+    const profileId = String(body.profileId ?? "").trim();
+    if (!profileId) return "Akun tujuan wajib dipilih";
+    out.profileId = profileId;
+  }
+
+  if (body.platforms !== undefined || !partial) {
+    const platforms = (Array.isArray(body.platforms) ? body.platforms : []).filter(
+      (p: any) => p === "instagram" || p === "youtube" || p === "facebook" || p === "threads" || p === "tiktok"
+    );
+    if (platforms.length === 0) return "Pilih minimal 1 platform";
+    out.platforms = platforms;
+  }
+
+  if (body.publishTimes !== undefined || !partial) {
+    const arr = body.publishTimes ? body.publishTimes : (body.publishTime ? [body.publishTime] : []);
+    const times = arr.map((t: any) => String(t).trim()).filter(Boolean);
+    for (const t of times) {
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) return "Format jam publish harus HH:mm";
+    }
+    if (times.length === 0) times.push("19:00");
+    out.publishTimes = times;
+  }
+
+  if (body.enabled !== undefined || !partial) out.enabled = body.enabled !== false;
+  if (body.requireApproval !== undefined || !partial) out.requireApproval = body.requireApproval === true;
+
+  if (body.maxClipsPerDay !== undefined || !partial) {
+    const n = Number(body.maxClipsPerDay ?? 1);
+    out.maxClipsPerDay = Number.isFinite(n) ? Math.min(10, Math.max(1, Math.round(n))) : 1;
+  }
+
+  return out;
+}
+
+export const watchlistStore = new WatchlistStore();
+
