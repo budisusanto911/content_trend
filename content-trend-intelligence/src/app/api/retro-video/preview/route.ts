@@ -6,14 +6,28 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { imagePath, inkName = "charcoal", paperType = "cream" } = body;
+    const {
+      seriesTag = "SERI JUMAT 3/3",
+      title = "Tempat Berdoa di Hari Jumat",
+      speaker = "Syaikh Prof. Dr. Badr bin Nashir al-Badr",
+      footerBrand = "DzikirQu | MASJID BASHIRAH",
+      theme = "navy_blue",
+      bgStyle = "classic_cream",
+      bgImagePath = "",
+      scenes = [],
+      previewSceneIndex = 0,
+    } = body;
 
     const result = await RetroVideoService.generatePreview({
-      imagePath,
-      hook: "",
-      script: "",
-      inkName,
-      paperType,
+      seriesTag,
+      title,
+      speaker,
+      footerBrand,
+      theme,
+      bgStyle,
+      bgImagePath,
+      scenes,
+      previewSceneIndex,
     });
 
     if (!result.success) {

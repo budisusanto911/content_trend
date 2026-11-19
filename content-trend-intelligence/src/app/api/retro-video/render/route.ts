@@ -8,35 +8,44 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const {
-      imagePath,
-      hook = "Ketika Hatimu Merasa Lelah",
-      script = "Ingatlah, tidak ada lelah yang sia-sia bagi hati yang selalu bersandar pada ketetapan-Nya.",
-      inkName = "charcoal",
-      paperType = "cream",
+      seriesTag = "SERI JUMAT 3/3",
+      title = "Tempat Berdoa di Hari Jumat",
+      speaker = "Syaikh Prof. Dr. Badr bin Nashir al-Badr",
+      footerBrand = "DzikirQu | MASJID BASHIRAH",
+      theme = "navy_blue",
+      bgStyle = "classic_cream",
+      bgImagePath = "",
       voice = "id-ID-ArdiNeural",
+      scenes = [],
     } = body;
 
+    if (!Array.isArray(scenes) || scenes.length === 0) {
+      return NextResponse.json({ success: false, error: "Minimal harus ada 1 scene." }, { status: 400 });
+    }
+
     const result = await RetroVideoService.renderVideo({
-      imagePath,
-      hook,
-      script,
-      inkName,
-      paperType,
+      seriesTag,
+      title,
+      speaker,
+      footerBrand,
+      theme,
+      bgStyle,
+      bgImagePath,
       voice,
+      scenes,
     });
 
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error, logs: result.logs }, { status: 500 });
     }
 
-    // Save to lastClipStore so it can be viewed in Library or published directly!
     try {
       lastClipStore.update({
         outputFile: result.videoUrl,
-        title: hook,
-        hook: hook,
-        tags: ["#dzikir", "#renungan", "#quotes", "#tenang", "#aesthetic"],
-        hashtags: ["#dzikir", "#renungan", "#quotes", "#retrovideo"],
+        title,
+        hook: seriesTag ? `${seriesTag} - ${title}` : title,
+        tags: ["#dzikir", "#renungan", "#doa", "#jumat", "#islamicreels"],
+        hashtags: ["#dzikir", "#renungan", "#doa", "#doodlereels"],
       });
     } catch (e) {
       console.warn("Could not record to lastClipStore:", e);
@@ -45,7 +54,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       videoUrl: result.videoUrl,
-      title: hook,
+      title,
       logs: result.logs,
     });
   } catch (error: any) {

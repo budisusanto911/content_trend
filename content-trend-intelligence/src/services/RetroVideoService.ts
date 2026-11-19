@@ -2,20 +2,30 @@ import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 
+export type DoodleTheme = "navy_blue" | "emerald_sage" | "terracotta_warm" | "charcoal_gold";
+
+export interface DoodleScene {
+  icon: string;
+  text: string;
+}
+
 export interface RetroVideoOptions {
-  imagePath?: string;
-  hook: string;
-  script: string;
-  inkName: "charcoal" | "terracotta" | "sage_olive" | "vintage_navy" | "sepia_brown";
-  paperType: "cream" | "kraft" | "parchment";
+  seriesTag: string;
+  title: string;
+  speaker: string;
+  footerBrand: string;
+  theme: DoodleTheme;
+  bgStyle?: string;
+  bgImagePath?: string;
   voice?: string;
+  scenes: DoodleScene[];
+  previewSceneIndex?: number;
 }
 
 export interface RetroVideoResult {
   success: boolean;
   videoUrl?: string;
   previewUrl?: string;
-  duration?: number;
   error?: string;
   logs: string;
 }
@@ -49,7 +59,7 @@ export class RetroVideoService {
   }
 
   /**
-   * Generates a fast 1-frame preview image
+   * Generates a fast 1-frame preview image for a specific scene
    */
   static async generatePreview(options: RetroVideoOptions): Promise<RetroVideoResult> {
     const pythonBin = this.getPythonPath();
@@ -57,22 +67,30 @@ export class RetroVideoService {
     const rootDir = this.getProjectRoot();
 
     const timestamp = Date.now();
-    const outputRel = `/clips/preview_${options.inkName}_${options.paperType}_${timestamp}.png`;
+    const filename = `preview_${options.theme}_${timestamp}.png`;
     const publicClipsDir = path.join(rootDir, "content-trend-intelligence", "public", "clips");
     fs.mkdirSync(publicClipsDir, { recursive: true });
-    const fullOutputPath = path.join(publicClipsDir, `preview_${options.inkName}_${options.paperType}_${timestamp}.png`);
+    const fullOutputPath = path.join(publicClipsDir, filename);
 
-    let inputImg = options.imagePath || path.join(rootDir, "test_orig_frame.png");
-    if (!fs.existsSync(inputImg)) {
-      inputImg = path.join(rootDir, "test_orig_frame.png");
-    }
+    const idx = options.previewSceneIndex ?? 0;
+    const activeScene = options.scenes?.[idx] || options.scenes?.[0] || {
+      icon: "mimbar",
+      text: "Bila khatib naik mimbar, ia menghadap jamaah dan *memberi salam.*",
+    };
 
     const args = [
       scriptPath,
       "--preview",
-      "--image", inputImg,
-      "--ink", options.inkName,
-      "--paper", options.paperType,
+      "--series", options.seriesTag || "",
+      "--title", options.title || "Tempat Berdoa di Hari Jumat",
+      "--speaker", options.speaker || "",
+      "--footer", options.footerBrand || "",
+      "--theme", options.theme || "navy_blue",
+      "--bg-style", options.bgStyle || "classic_cream",
+      ...(options.bgImagePath ? ["--bg-image", options.bgImagePath] : []),
+      "--icon", activeScene.icon || "mimbar",
+      "--text", activeScene.text || "",
+      "--scenes-json", JSON.stringify([activeScene]),
       "--output", fullOutputPath,
     ];
 
@@ -87,7 +105,7 @@ export class RetroVideoService {
         if (code === 0 && fs.existsSync(fullOutputPath)) {
           resolve({
             success: true,
-            previewUrl: outputRel,
+            previewUrl: `/clips/${filename}`,
             logs,
           });
         } else {
@@ -102,7 +120,7 @@ export class RetroVideoService {
   }
 
   /**
-   * Renders the complete retro video
+   * Renders the complete multi-scene DzikirQu Doodle Motion Reel
    */
   static async renderVideo(options: RetroVideoOptions): Promise<RetroVideoResult> {
     const pythonBin = this.getPythonPath();
@@ -115,19 +133,21 @@ export class RetroVideoService {
     fs.mkdirSync(publicClipsDir, { recursive: true });
     const fullOutputPath = path.join(publicClipsDir, outputFilename);
 
-    let inputImg = options.imagePath || path.join(rootDir, "test_orig_frame.png");
-    if (!fs.existsSync(inputImg)) {
-      inputImg = path.join(rootDir, "test_orig_frame.png");
-    }
+    const scenesFile = path.join(rootDir, "data", "temp_retro", `scenes_${timestamp}.json`);
+    fs.mkdirSync(path.dirname(scenesFile), { recursive: true });
+    fs.writeFileSync(scenesFile, JSON.stringify(options.scenes, null, 2), "utf-8");
 
     const args = [
       scriptPath,
-      "--image", inputImg,
-      "--hook", options.hook || "Ketika Hatimu Merasa Lelah",
-      "--script", options.script || "Tenangkan hatimu, perbanyaklah bersyukur dan beristighfar.",
-      "--ink", options.inkName || "charcoal",
-      "--paper", options.paperType || "cream",
+      "--series", options.seriesTag || "",
+      "--title", options.title || "Tempat Berdoa di Hari Jumat",
+      "--speaker", options.speaker || "",
+      "--footer", options.footerBrand || "",
+      "--theme", options.theme || "navy_blue",
+      "--bg-style", options.bgStyle || "classic_cream",
+      ...(options.bgImagePath ? ["--bg-image", options.bgImagePath] : []),
       "--voice", options.voice || "id-ID-ArdiNeural",
+      "--scenes-json", scenesFile,
       "--output", fullOutputPath,
     ];
 
@@ -139,6 +159,7 @@ export class RetroVideoService {
       proc.stderr.on("data", (d) => { logs += d.toString(); });
 
       proc.on("close", (code) => {
+        try { fs.unlinkSync(scenesFile); } catch {}
         if (code === 0 && fs.existsSync(fullOutputPath)) {
           resolve({
             success: true,
@@ -157,58 +178,76 @@ export class RetroVideoService {
   }
 
   /**
-   * Generates contemplative quote ideas with token efficiency or built-in templates
+   * Curated multi-scene presets (0 AI tokens) + dynamic topic adaptation
    */
-  static async generateScriptConcept(topic?: string, theme = "dzikir_peace"): Promise<{
-    hook: string;
-    script: string;
-    recommendedInk: "charcoal" | "terracotta" | "sage_olive" | "vintage_navy" | "sepia_brown";
-    recommendedPaper: "cream" | "kraft" | "parchment";
+  static async generateScriptConcept(topic?: string): Promise<{
+    seriesTag: string;
+    title: string;
+    speaker: string;
+    theme: DoodleTheme;
+    scenes: DoodleScene[];
   }> {
-    // Curated high quality presets (Zero tokens needed!)
-    const presets = [
+    const presets: Array<{
+      seriesTag: string;
+      title: string;
+      speaker: string;
+      theme: DoodleTheme;
+      scenes: DoodleScene[];
+    }> = [
       {
-        hook: "Ketika Semuanya Terasa Terlalu Berat",
-        script: "Ingatlah firman-Nya: Tidaklah Allah membebani seseorang melainkan sesuai dengan kesanggupannya. Tarik nafasmu, kembalikan semua urusan kepada-Nya.",
-        recommendedInk: "charcoal" as const,
-        recommendedPaper: "cream" as const,
+        seriesTag: "SERI JUMAT 3/3",
+        title: "Tempat Berdoa di Hari Jumat",
+        speaker: "Syaikh Prof. Dr. Badr bin Nashir al-Badr",
+        theme: "navy_blue",
+        scenes: [
+          { icon: "mimbar", text: "Bila khatib naik mimbar, ia menghadap jamaah dan *memberi salam.*" },
+          { icon: "speech", text: "Jawab muadzin, lalu berdoa. Berdoalah *di antara dua khutbah.*" },
+          { icon: "stairs", text: "Berdoalah juga saat ia *turun dari mimbar,* selesai khutbah kedua, sampai shalat dimulai." },
+          { icon: "tasbih", text: "dan di *akhir tasyahud terakhir.* Semua ini adalah *tempat dikabulkannya doa.*" },
+        ],
       },
       {
-        hook: "Ketenangan Yang Dicari Hati",
-        script: "Hati ini diciptakan bukan untuk menampung seluruh beban dunia, melainkan untuk mengingat Sang Pemilik Semesta. 'Ala bidzikrillahi tathma'innul qulub.",
-        recommendedInk: "sage_olive" as const,
-        recommendedPaper: "parchment" as const,
+        seriesTag: "SERI KETENANGAN 1/3",
+        title: "Obat Hati yang Sedang Gelisah",
+        speaker: "Fawaid & Tadabbur Harian",
+        theme: "emerald_sage",
+        scenes: [
+          { icon: "heart", text: "Hati manusia tidak diciptakan untuk menampung *seluruh beban dunia.*" },
+          { icon: "book", text: "Allah berfirman: hanya dengan mengingat Allah, *hati menjadi tenang.*" },
+          { icon: "hands", text: "Angkat tanganmu, adukan segala resahmu *hanya kepada-Nya.*" },
+          { icon: "tasbih", text: "Basahi lisan dengan istighfar, niscaya Allah datangkan *jalan keluar.*" },
+        ],
       },
       {
-        hook: "Jangan Takut Kehilangan Esok",
-        script: "Setiap hembusan nafas yang engkau hirup hari ini adalah bukti bahwa kasih sayang-Nya belum berakhir. Berdoalah, lalu biarkan takdir terbaik-Nya bekerja.",
-        recommendedInk: "terracotta" as const,
-        recommendedPaper: "kraft" as const,
+        seriesTag: "SERI TAHAJJUD 2/3",
+        title: "Keajaiban Sepertiga Malam",
+        speaker: "Nasihat Ulama Salaf",
+        theme: "charcoal_gold",
+        scenes: [
+          { icon: "crescent", text: "Ketika seluruh dunia terlelap, ada *pintu langit yang terbuka.*" },
+          { icon: "clock", text: "Di sepertiga malam terakhir, Allah turun dan *mengabulkan setiap pinta.*" },
+          { icon: "mosque", text: "Bangunlah walau hanya dua rakaat, *bisikkan hajat terdalammu.*" },
+          { icon: "scrolls", text: "Sebab doa di waktu sahur bagaikan *anak panah yang tak meleset.*" },
+        ],
       },
-      {
-        hook: "Di Sepertiga Malam Yang Sunyi",
-        script: "Ketika dunia tertidur dan tak ada yang mendengar keluh kesahmu, ada pintu langit yang selalu terbuka lebar bagi mereka yang menengadahkan tangan.",
-        recommendedInk: "vintage_navy" as const,
-        recommendedPaper: "cream" as const,
-      },
-      {
-        hook: "Satu Detik Bersyukur Mengubah Segalanya",
-        script: "Bukan bahagia yang membuat kita bersyukur, tetapi rasa syukurlah yang mengalirkan ketenangan ke setiap celah hati kita yang sempat gundah.",
-        recommendedInk: "sepia_brown" as const,
-        recommendedPaper: "kraft" as const,
-      }
     ];
 
-    if (!topic || topic.trim().length === 0) {
+    if (!topic || !topic.trim()) {
       return presets[Math.floor(Math.random() * presets.length)];
     }
 
-    // Return a themed concept matching the topic
+    const cleanTopic = topic.trim();
     return {
-      hook: `Renungan: ${topic}`,
-      script: `Semoga di balik setiap ujian ${topic.toLowerCase()}, Allah titipkan ketabahan, hikmah yang mendalam, dan kedamaian yang tak pernah terbayangkan sebelumnya.`,
-      recommendedInk: "charcoal",
-      recommendedPaper: "cream",
+      seriesTag: "SERI RENUNGAN 1/1",
+      title: cleanTopic,
+      speaker: "Catatan Hikmah Harian",
+      theme: "navy_blue",
+      scenes: [
+        { icon: "book", text: `Mari sejenak merenungi makna *${cleanTopic}* dalam kehidupan kita.` },
+        { icon: "heart", text: `Sering kali hati lupa bahwa setiap takdir selalu membawa *hikmah terbaik.*` },
+        { icon: "hands", text: `Perbanyaklah berdoa agar Allah kuatkan hati dan *melapangkan dada kita.*` },
+        { icon: "tasbih", text: `Semoga setiap langkah kita senantiasa berada dalam *ridha dan keberkahan-Nya.*` },
+      ],
     };
   }
 }

@@ -1,65 +1,48 @@
 ---
 name: retro-video-generator
-description: Guidelines, recipes, and token-saving architectural patterns for generating DzikirQu-style retro halftone/risograph animated videos.
+description: Guidelines, recipes, and token-saving architectural patterns for generating DzikirQu-style multi-scene animated doodle motion reels (hand-drawn stroke icons, Islamic geometric borders, pastel highlight subtitles).
 ---
 
-# Retro Video Generator (DzikirQu Halftone & Risograph Style)
+# DzikirQu Doodle Motion Video Generator
 
-Panduan teknis dan standar arsitektur untuk memproduksi video bergaya **DzikirQu** (Halftone Stippling + Risograph Duo-Tone + Vintage Paper Texture + Motion Subtitle) dengan konsumsi token seminimal mungkin.
-
----
-
-## 1. Aturan Efisiensi Token (Token-Saving Protocol)
-
-Untuk menjaga efisiensi token AI hingga 90%+:
-1. **Gunakan Python & FFmpeg untuk Render (Zero LLM Tokens):**
-   - Efek Halftone/Dither, Paper Texture Overlay, Ken Burns Motion, dan Subtitle ASS di-render secara lokal menggunakan PIL dan FFmpeg tanpa memanggil API AI eksternal.
-2. **Minimalist JSON untuk AI Narasi:**
-   - Gunakan AI (Gemini / Nemotron / Groq) **hanya** untuk membuat narasi, hook, dan metadata singkat dengan struktur JSON yang ringkas.
-3. **Preset Aset Lokal:**
-   - Simpan tekstur kertas (`assets/textures/kraft_paper.png`), noise loop (`assets/textures/film_grain.mp4`), dan ambient audio di direktori lokal untuk menghindari fetch berulang.
+Standar arsitektur dan resep teknis untuk memproduksi video vertikal 9:16 bergaya **DzikirQu** (referensi: `instagram.com/dzikirquapp/reel/Df5qhIAIQXg/`) secara lokal dengan **0 token AI untuk render visual & animasi**.
 
 ---
 
-## 2. Pipeline Teknis Visual (Deterministic Engine)
+## 1. Anatomi Visual DzikirQu Reel
 
-### A. Algoritma Halftone & Dithering (Pillow)
-Konversi gambar atau ilustrasi dasar menjadi pola bintik halftone:
-- Ubah image ke Grayscale (`L`).
-- Terapkan kontras tinggi (Levels / Curve).
-- Konversi ke 1-bit Dither menggunakan Floyd-Steinberg (`image.convert('1', dither=Image.Dither.FLOYDSTEINBERG)`) atau Bayer Matrix Halftone Screen.
-- Tinting warna: Ganti warna hitam dengan Ink Color (misal Charcoal `#222222` atau Dark Terracotta `#6A2E20`), dan putih dengan transparan.
-
-### B. Komposisi FFmpeg (Video Render + Motion)
-- **Background Layer:** Gambar tekstur kertas cream (`#F6F0E7`).
-- **Illustration Layer:** Ilustrasi halftone dengan filter Ken Burns halus:
-  `zoompan=z='min(zoom+0.0005,1.1)':d=750:s=1080x1920:fps=30`
-- **Grain Overlay:** Loop video noise/grain dengan blend mode `screen` atau `overlay` pada opacity 15%.
-- **Audio Mix:** Voiceover audio + Ambient BGM (-18dB ducking).
-- **Subtitles:** Render subtitle ASS/SRT dengan font Serif klasik (*Playfair Display* / *EB Garamond*).
+1. **Kanvas Kertas & Border Geometris Islami:**
+   - Background kertas krem hangat (`#F2EDE0`) dengan grain organik halus.
+   - Strip border pola bintang 8 sudut Islami (*Rub el Hizb*) + garis solid di bagian atas dan bawah.
+2. **Header Editorial Statis:**
+   - Series tag uppercase berjarak huruf lebar (contoh: `SERI JUMAT 3/3`).
+   - Judul utama Serif Bold 2 baris (`LiberationSerif-Bold`).
+   - Kredit pembicara / sumber di bawah judul.
+3. **Ilustrasi Doodle Multi-Scene Beranimasi (Tengah):**
+   - Setiap slide/kalimat memiliki ikon doodle hand-drawn tebal (`mimbar`, `speech`, `stairs`, `tasbih`, `scrolls`, `mosque`, `hands`, `book`, `heart`, `crescent`, `clock`).
+   - **Animasi Draw-On:** Garis tergambar bertahap dari stroke pertama hingga selesai (~1.25 detik), disertai *hand-drawn boil* (~4 fps).
+   - **Watercolor Splash & Accents:** Bercak warna pastel organik di belakang doodle + aksen bintang (`✦`), garis gerak (`///`), dan `+`.
+4. **Subtitle Condensed dengan Highlight Kata Kunci:**
+   - Font `LiberationSansNarrow-Bold` rata tengah.
+   - Kata yang dibungkus `*...*` otomatis berwarna aksen dengan blok highlighter pastel di belakangnya yang menyapu dari kiri ke kanan.
+5. **Footer Branding Statis:**
+   - Nama akun/lembaga di bagian bawah (mendukung format `Brand Kiri | Brand Kanan`).
 
 ---
 
-## 3. Format Kontrak Data (Script & Context)
+## 2. Efisiensi Token (Token-Saving Protocol)
 
-Ketika memanggil LLM untuk menghasilkan ide video DzikirQu, batasi output hanya pada schema ini:
+- **0 Token untuk Visual & Video:** Seluruh border, doodle, animasi draw-on, highlight bar, dan encoding MP4 dirender deterministik via `toolkit/retro_video_engine.py` (Pillow + FFmpeg rawvideo pipe).
+- **Audio Narasi Per Scene:** Menggunakan `edge-tts` lokal (gratis, sinkron per slide) + fallback timing offline otomatis.
+- **Preset Multi-Scene Siap Pakai:** `RetroVideoService.generateScriptConcept()` menyediakan preset siap pakai tanpa memanggil LLM.
+
+---
+
+## 3. Kontrak Data Multi-Scene
 
 ```typescript
-export interface RetroVideoConcept {
-  theme: string;           // e.g. "Ketenangan Jiwa & Dzikir Petang"
-  titleHook: string;       // 1 kalimat hook pembuka
-  arabicText?: string;     // Ayat / Hadits / Dzikir (opsional)
-  translation: string;     // Terjemahan / hikmah singkat
-  voiceoverScript: string; // Teks narasi untuk dibaca TTS (maks 3-5 kalimat)
-  visualPrompt: string;    // Prompt gambar dasar untuk AI Image Generator
-  recommendedTone: "peaceful" | "melancholic" | "reflective";
+export interface DoodleScene {
+  icon: "mimbar" | "scrolls" | "speech" | "stairs" | "tasbih" | "mosque" | "heart" | "crescent" | "book" | "hands" | "clock";
+  text: string; // Bungkus frasa penting dengan *...* untuk highlight pastel
 }
 ```
-
----
-
-## 4. Checklist Kualitas Video
-- [ ] Rasio Video: `9:16` (1080x1920) untuk Reels/Shorts/TikTok.
-- [ ] Frame Rate: 24 atau 30 FPS untuk nuansa sinematik klasik.
-- [ ] Durasi Optimal: 15–35 detik (ritme lambat & kontemplatif).
-- [ ] Readability: Teks memiliki kontras cukup terhadap tekstur kertas.
