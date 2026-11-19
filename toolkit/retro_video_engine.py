@@ -328,39 +328,434 @@ def get_doodle_definition(icon_name: str) -> Dict[str, Any]:
             ],
             "accents": [("lines", 0.78, 0.18, 1.0), ("star", 0.20, 0.22, 1.0), ("plus", 0.80, 0.76, 1.0)],
         },
+        "kaaba": {
+            "blob_centers": [(0.62, 0.62, 0.24), (0.42, 0.68, 0.18)],
+            "strokes": [
+                # Isometric Kaaba cube
+                [(0.22, 0.36), (0.52, 0.24), (0.80, 0.35), (0.50, 0.47), (0.22, 0.36)],
+                [(0.22, 0.36), (0.22, 0.74), (0.50, 0.84), (0.50, 0.47)],
+                [(0.50, 0.84), (0.80, 0.72), (0.80, 0.35)],
+                # Kiswah gold band
+                [(0.22, 0.48), (0.50, 0.59), (0.80, 0.47)],
+                [(0.22, 0.53), (0.50, 0.64), (0.80, 0.52)],
+                # Door on right face
+                [(0.61, 0.79), (0.61, 0.62), (0.70, 0.58), (0.70, 0.75)],
+            ],
+            "accents": [("star", 0.22, 0.18, 1.1), ("lines", 0.78, 0.18, 1.0), ("plus", 0.84, 0.78, 1.0)],
+        },
+        "lantern": {
+            "blob_centers": [(0.56, 0.58, 0.24), (0.44, 0.66, 0.16)],
+            "strokes": [
+                # Hanging ring & chain
+                [(0.50, 0.10), (0.50, 0.18)],
+                _circle_pts(0.50, 0.22, 0.04, 0.04, 12),
+                # Top dome cap
+                [(0.34, 0.38), (0.40, 0.29), (0.50, 0.26), (0.60, 0.29), (0.66, 0.38), (0.34, 0.38)],
+                # Lantern glass body
+                [(0.36, 0.38), (0.32, 0.68), (0.68, 0.68), (0.64, 0.38)],
+                # Inner vertical ribs & flame
+                [(0.45, 0.38), (0.43, 0.68)],
+                [(0.55, 0.38), (0.57, 0.68)],
+                [(0.50, 0.60), (0.47, 0.53), (0.50, 0.45), (0.53, 0.53), (0.50, 0.60)],
+                # Base pedestal
+                [(0.28, 0.68), (0.72, 0.68), (0.66, 0.78), (0.34, 0.78), (0.28, 0.68)],
+                [(0.38, 0.78), (0.36, 0.84), (0.64, 0.84), (0.62, 0.78)],
+            ],
+            "accents": [("star", 0.20, 0.24, 1.0), ("lines", 0.78, 0.26, 1.0), ("plus", 0.20, 0.72, 1.0)],
+        },
+        "prayer_mat": {
+            "blob_centers": [(0.58, 0.60, 0.24), (0.42, 0.66, 0.17)],
+            "strokes": [
+                # Outer mat rectangle
+                [(0.28, 0.20), (0.72, 0.20), (0.72, 0.80), (0.28, 0.80), (0.28, 0.20)],
+                # Inner border
+                [(0.34, 0.26), (0.66, 0.26), (0.66, 0.74), (0.34, 0.74), (0.34, 0.26)],
+                # Mihrab arch inside
+                [(0.40, 0.70), (0.40, 0.46), (0.50, 0.34), (0.60, 0.46), (0.60, 0.70)],
+                # Top & bottom tassels
+                *[[(x, 0.20), (x, 0.14)] for x in (0.32, 0.41, 0.50, 0.59, 0.68)],
+                *[[(x, 0.80), (x, 0.86)] for x in (0.32, 0.41, 0.50, 0.59, 0.68)],
+            ],
+            "accents": [("star", 0.18, 0.28, 1.0), ("lines", 0.82, 0.24, 1.0), ("plus", 0.82, 0.76, 1.0)],
+        },
+        "water_drop": {
+            "blob_centers": [(0.58, 0.62, 0.23), (0.44, 0.68, 0.16)],
+            "strokes": [
+                # Teardrop contour
+                [(0.50, 0.18), (0.34, 0.44), (0.28, 0.58), (0.32, 0.70), (0.42, 0.77), (0.50, 0.78),
+                 (0.58, 0.77), (0.68, 0.70), (0.72, 0.58), (0.66, 0.44), (0.50, 0.18)],
+                # Inner highlight curve
+                [(0.38, 0.56), (0.39, 0.64), (0.44, 0.69)],
+                # Ripple rings at bottom
+                _arc_pts(0.50, 0.80, 0.30, 0.08, -20, 200, 18),
+            ],
+            "accents": [("star", 0.22, 0.26, 1.0), ("lines", 0.76, 0.22, 1.0), ("plus", 0.78, 0.70, 1.0)],
+        },
+        "charity_coin": {
+            "blob_centers": [(0.58, 0.60, 0.24), (0.44, 0.68, 0.17)],
+            "strokes": [
+                # Coin with star/heart inside
+                _circle_pts(0.50, 0.36, 0.16, 0.16, 28),
+                [(0.50, 0.29), (0.50, 0.43)],
+                [(0.43, 0.36), (0.57, 0.36)],
+                # Giving hand beneath
+                [(0.18, 0.68), (0.34, 0.64), (0.58, 0.64), (0.78, 0.58), (0.82, 0.63), (0.64, 0.74), (0.36, 0.76), (0.18, 0.78)],
+                [(0.18, 0.65), (0.18, 0.81)],
+            ],
+            "accents": [("star", 0.24, 0.24, 1.0), ("lines", 0.74, 0.22, 1.0), ("plus", 0.80, 0.78, 1.0)],
+        },
+        "compass": {
+            "blob_centers": [(0.58, 0.58, 0.24), (0.44, 0.66, 0.17)],
+            "strokes": [
+                _circle_pts(0.50, 0.52, 0.30, 0.30, 36),
+                _circle_pts(0.50, 0.52, 0.23, 0.23, 28),
+                # Diamond compass needle tilted NE
+                [(0.64, 0.38), (0.54, 0.56), (0.36, 0.66), (0.46, 0.48), (0.64, 0.38)],
+                [(0.46, 0.48), (0.54, 0.56)],
+                # Top ring
+                _circle_pts(0.50, 0.17, 0.05, 0.05, 12),
+            ],
+            "accents": [("star", 0.20, 0.22, 1.0), ("lines", 0.80, 0.22, 1.0), ("swirl", 0.20, 0.80, 1.0)],
+        },
+        "hourglass": {
+            "blob_centers": [(0.58, 0.60, 0.23), (0.44, 0.68, 0.17)],
+            "strokes": [
+                # Top & bottom wooden frames
+                [(0.26, 0.20), (0.74, 0.20), (0.74, 0.26), (0.26, 0.26), (0.26, 0.20)],
+                [(0.26, 0.74), (0.74, 0.74), (0.74, 0.80), (0.26, 0.80), (0.26, 0.74)],
+                # Glass bulbs
+                [(0.32, 0.26), (0.34, 0.40), (0.48, 0.50), (0.34, 0.60), (0.32, 0.74)],
+                [(0.68, 0.26), (0.66, 0.40), (0.52, 0.50), (0.66, 0.60), (0.68, 0.74)],
+                # Sand levels & falling stream
+                [(0.38, 0.38), (0.62, 0.38)],
+                [(0.50, 0.52), (0.50, 0.68)],
+                [(0.38, 0.72), (0.50, 0.64), (0.62, 0.72)],
+            ],
+            "accents": [("lines", 0.20, 0.24, 1.0), ("star", 0.82, 0.26, 1.0), ("plus", 0.82, 0.72, 1.0)],
+        },
+        "pen_quill": {
+            "blob_centers": [(0.56, 0.58, 0.23), (0.42, 0.68, 0.18)],
+            "strokes": [
+                # Feather outline diagonally
+                [(0.24, 0.74), (0.36, 0.50), (0.54, 0.30), (0.76, 0.20), (0.72, 0.40), (0.54, 0.58), (0.34, 0.68), (0.24, 0.74)],
+                # Central shaft
+                [(0.20, 0.78), (0.70, 0.26)],
+                # Feather notches
+                [(0.52, 0.34), (0.58, 0.38)],
+                [(0.42, 0.44), (0.48, 0.48)],
+                # Written wavy signature line at bottom
+                [(0.22, 0.80), (0.36, 0.77), (0.52, 0.82), (0.76, 0.79)],
+            ],
+            "accents": [("star", 0.24, 0.26, 1.0), ("lines", 0.82, 0.24, 1.0), ("plus", 0.78, 0.68, 1.0)],
+        },
+        "sun_rise": {
+            "blob_centers": [(0.54, 0.58, 0.24), (0.66, 0.66, 0.16)],
+            "strokes": [
+                # Horizon line
+                [(0.14, 0.68), (0.86, 0.68)],
+                [(0.26, 0.76), (0.74, 0.76)],
+                # Rising half-sun
+                _arc_pts(0.50, 0.68, 0.22, 0.22, 180, 360, 24),
+                # Sun rays
+                [(0.50, 0.38), (0.50, 0.24)],
+                [(0.32, 0.44), (0.23, 0.34)],
+                [(0.68, 0.44), (0.77, 0.34)],
+                [(0.22, 0.58), (0.14, 0.54)],
+                [(0.78, 0.58), (0.86, 0.54)],
+            ],
+            "accents": [("star", 0.22, 0.22, 1.0), ("plus", 0.80, 0.24, 1.0)],
+        },
+        "rain_cloud": {
+            "blob_centers": [(0.58, 0.54, 0.24), (0.42, 0.62, 0.17)],
+            "strokes": [
+                # Fluffy cloud
+                [(0.24, 0.54), (0.76, 0.54)],
+                _arc_pts(0.30, 0.46, 0.12, 0.10, 120, 310, 14),
+                _arc_pts(0.48, 0.36, 0.16, 0.14, 175, 365, 18),
+                _arc_pts(0.68, 0.44, 0.12, 0.11, 220, 420, 14),
+                # Raindrops
+                [(0.32, 0.62), (0.28, 0.74)],
+                [(0.45, 0.64), (0.41, 0.78)],
+                [(0.58, 0.62), (0.54, 0.74)],
+                [(0.70, 0.64), (0.66, 0.76)],
+            ],
+            "accents": [("star", 0.20, 0.24, 1.0), ("lines", 0.80, 0.22, 1.0), ("plus", 0.82, 0.72, 1.0)],
+        },
+        "mountain": {
+            "blob_centers": [(0.60, 0.64, 0.24), (0.40, 0.68, 0.18)],
+            "strokes": [
+                # Ground line
+                [(0.12, 0.76), (0.88, 0.76)],
+                # Big mountain peak
+                [(0.16, 0.76), (0.44, 0.28), (0.68, 0.76)],
+                # Snow cap zig-zag
+                [(0.36, 0.42), (0.41, 0.46), (0.45, 0.41), (0.50, 0.45), (0.53, 0.42)],
+                # Second smaller peak
+                [(0.56, 0.52), (0.68, 0.38), (0.86, 0.76)],
+            ],
+            "accents": [("star", 0.22, 0.24, 1.0), ("lines", 0.78, 0.20, 1.0), ("plus", 0.20, 0.50, 1.0)],
+        },
+        "tree": {
+            "blob_centers": [(0.56, 0.48, 0.24), (0.44, 0.56, 0.18)],
+            "strokes": [
+                # Ground & trunk
+                [(0.24, 0.80), (0.76, 0.80)],
+                [(0.46, 0.80), (0.46, 0.54)],
+                [(0.54, 0.80), (0.54, 0.54)],
+                [(0.46, 0.62), (0.38, 0.54)],
+                [(0.54, 0.60), (0.62, 0.52)],
+                # Leafy canopy puffs
+                _arc_pts(0.50, 0.34, 0.18, 0.16, 150, 390, 20),
+                _arc_pts(0.34, 0.46, 0.14, 0.13, 90, 300, 16),
+                _arc_pts(0.66, 0.46, 0.14, 0.13, -120, 90, 16),
+                [(0.34, 0.58), (0.66, 0.58)],
+            ],
+            "accents": [("star", 0.20, 0.22, 1.0), ("lines", 0.80, 0.22, 1.0), ("plus", 0.80, 0.72, 1.0)],
+        },
+        "leaf_sprout": {
+            "blob_centers": [(0.58, 0.58, 0.23), (0.44, 0.66, 0.17)],
+            "strokes": [
+                # Soil mound
+                _arc_pts(0.50, 0.78, 0.26, 0.08, 180, 360, 16),
+                [(0.22, 0.78), (0.78, 0.78)],
+                # Curved stem
+                [(0.50, 0.74), (0.49, 0.56), (0.51, 0.40)],
+                # Left leaf
+                [(0.50, 0.52), (0.34, 0.46), (0.24, 0.34), (0.40, 0.34), (0.50, 0.48)],
+                # Right leaf
+                [(0.50, 0.44), (0.64, 0.36), (0.76, 0.26), (0.62, 0.24), (0.50, 0.38)],
+            ],
+            "accents": [("star", 0.22, 0.20, 1.0), ("lines", 0.78, 0.18, 1.0), ("plus", 0.80, 0.66, 1.0)],
+        },
+        "bird_dove": {
+            "blob_centers": [(0.56, 0.56, 0.24), (0.42, 0.64, 0.16)],
+            "strokes": [
+                # Dove body & breast
+                [(0.20, 0.66), (0.36, 0.62), (0.56, 0.64), (0.70, 0.54), (0.74, 0.42), (0.68, 0.36), (0.62, 0.42), (0.56, 0.48)],
+                # Beak
+                [(0.74, 0.40), (0.82, 0.42), (0.74, 0.45)],
+                # Raised wing
+                [(0.56, 0.48), (0.44, 0.26), (0.28, 0.24), (0.34, 0.42), (0.20, 0.48), (0.38, 0.54)],
+                # Tail
+                [(0.20, 0.66), (0.14, 0.58), (0.26, 0.58)],
+                # Eye dot
+                _circle_pts(0.68, 0.41, 0.015, 0.015, 8),
+            ],
+            "accents": [("star", 0.22, 0.20, 1.0), ("lines", 0.82, 0.24, 1.0), ("swirl", 0.24, 0.78, 1.0)],
+        },
+        "waves": {
+            "blob_centers": [(0.56, 0.60, 0.24), (0.40, 0.66, 0.18)],
+            "strokes": [
+                # Three expressive ocean wave crests
+                [(0.14, 0.46), (0.26, 0.34), (0.40, 0.46), (0.54, 0.34), (0.68, 0.46), (0.84, 0.34)],
+                [(0.14, 0.60), (0.28, 0.48), (0.42, 0.60), (0.56, 0.48), (0.70, 0.60), (0.86, 0.48)],
+                [(0.16, 0.74), (0.30, 0.62), (0.44, 0.74), (0.58, 0.62), (0.72, 0.74), (0.84, 0.64)],
+            ],
+            "accents": [("star", 0.22, 0.22, 1.0), ("lines", 0.78, 0.20, 1.0), ("plus", 0.80, 0.80, 1.0)],
+        },
+        "key": {
+            "blob_centers": [(0.56, 0.58, 0.23), (0.42, 0.64, 0.17)],
+            "strokes": [
+                # Ornate key bow (ring)
+                _circle_pts(0.32, 0.50, 0.15, 0.15, 28),
+                _circle_pts(0.32, 0.50, 0.07, 0.07, 16),
+                # Key shaft & teeth
+                [(0.47, 0.50), (0.82, 0.50)],
+                [(0.66, 0.50), (0.66, 0.64)],
+                [(0.76, 0.50), (0.76, 0.62)],
+                [(0.66, 0.60), (0.76, 0.60)],
+            ],
+            "accents": [("star", 0.24, 0.24, 1.0), ("lines", 0.78, 0.28, 1.0), ("plus", 0.76, 0.76, 1.0)],
+        },
+        "shield": {
+            "blob_centers": [(0.58, 0.58, 0.24), (0.44, 0.66, 0.17)],
+            "strokes": [
+                # Classic shield outline
+                [(0.50, 0.18), (0.76, 0.26), (0.74, 0.54), (0.64, 0.70), (0.50, 0.82), (0.36, 0.70), (0.26, 0.54), (0.24, 0.26), (0.50, 0.18)],
+                # Inner checkmark / crescent emblem
+                [(0.38, 0.50), (0.47, 0.60), (0.64, 0.40)],
+            ],
+            "accents": [("star", 0.18, 0.20, 1.0), ("lines", 0.82, 0.20, 1.0), ("plus", 0.80, 0.76, 1.0)],
+        },
+        "scale_balance": {
+            "blob_centers": [(0.56, 0.60, 0.24), (0.42, 0.66, 0.17)],
+            "strokes": [
+                # Base & center pillar
+                [(0.30, 0.80), (0.70, 0.80)],
+                [(0.50, 0.80), (0.50, 0.24)],
+                # Top beam
+                [(0.22, 0.34), (0.78, 0.34)],
+                # Left pan
+                [(0.24, 0.34), (0.16, 0.56)],
+                [(0.24, 0.34), (0.32, 0.56)],
+                _arc_pts(0.24, 0.56, 0.10, 0.06, 0, 180, 14),
+                [(0.14, 0.56), (0.34, 0.56)],
+                # Right pan
+                [(0.76, 0.34), (0.68, 0.56)],
+                [(0.76, 0.34), (0.84, 0.56)],
+                _arc_pts(0.76, 0.56, 0.10, 0.06, 0, 180, 14),
+                [(0.66, 0.56), (0.86, 0.56)],
+            ],
+            "accents": [("star", 0.22, 0.18, 1.0), ("lines", 0.78, 0.18, 1.0), ("plus", 0.80, 0.76, 1.0)],
+        },
+        "door_arch": {
+            "blob_centers": [(0.58, 0.60, 0.24), (0.42, 0.66, 0.18)],
+            "strokes": [
+                # Ground & outer Islamic arch frame
+                [(0.20, 0.80), (0.80, 0.80)],
+                [(0.26, 0.80), (0.26, 0.42), (0.34, 0.28), (0.50, 0.18), (0.66, 0.28), (0.74, 0.42), (0.74, 0.80)],
+                # Open door leaf angled inward
+                [(0.26, 0.80), (0.26, 0.42), (0.52, 0.36), (0.52, 0.74), (0.26, 0.80)],
+                # Door handle
+                _circle_pts(0.45, 0.58, 0.025, 0.025, 10),
+                # Light rays emerging from doorway
+                [(0.58, 0.48), (0.68, 0.44)],
+                [(0.58, 0.58), (0.70, 0.58)],
+                [(0.58, 0.68), (0.68, 0.72)],
+            ],
+            "accents": [("star", 0.20, 0.22, 1.0), ("lines", 0.80, 0.20, 1.0), ("plus", 0.82, 0.74, 1.0)],
+        },
     }
     return doodles.get(icon_name, doodles["mimbar"])
 
-AVAILABLE_ICONS = ["mimbar", "scrolls", "speech", "stairs", "tasbih", "mosque", "heart", "crescent", "book", "hands", "clock"]
+AVAILABLE_ICONS = [
+    "mimbar", "scrolls", "speech", "stairs", "tasbih", "mosque", "heart", "crescent", "book", "hands", "clock",
+    "kaaba", "lantern", "prayer_mat", "water_drop", "charity_coin", "compass", "hourglass", "pen_quill",
+    "sun_rise", "rain_cloud", "mountain", "tree", "leaf_sprout", "bird_dove", "waves",
+    "key", "shield", "scale_balance", "door_arch",
+]
 
 # =============================================================================
 # 3. STATIC TEMPLATE RENDERING (Paper + Geometric Borders + Header + Footer)
 # =============================================================================
 
-def draw_islamic_border_strip(draw: ImageDraw.ImageDraw, width: int, y_top: int, height: int, primary: tuple, accent: tuple, bg: tuple):
+def draw_border_strip(
+    img: Image.Image,
+    draw: ImageDraw.ImageDraw,
+    width: int,
+    y_top: int,
+    height: int,
+    primary: tuple,
+    accent: tuple,
+    bg: tuple,
+    border_style: str = "islamic_star",
+    border_image: str = "",
+):
     """
-    Draws an authentic repeating 8-pointed Islamic star & diamond lattice border strip.
+    Draws customizable top/bottom ornamental border strip:
+    islamic_star | arabesque_arch | diamond_weave | floral_vine | minimal_double | dotted_chain | none | custom image
     """
-    # Subtle soft band background
-    draw.rectangle([(0, y_top), (width, y_top + height)], fill=bg)
-    
-    tile_w = 72
+    if border_style == "none":
+        return
+
+    # Custom uploaded border strip image
+    if border_image and os.path.exists(border_image):
+        b_img = Image.open(border_image).convert("RGBA")
+        # Scale proportionally to strip height and tile horizontally across width
+        scale_h = height
+        scale_w = max(1, int(b_img.width * (scale_h / max(1, b_img.height))))
+        b_tile = b_img.resize((scale_w, scale_h), Image.Resampling.LANCZOS)
+        x = 0
+        while x < width:
+            img.paste(b_tile, (x, y_top), b_tile)
+            x += scale_w
+        return
+
     cy = y_top + height // 2
+
+    if border_style == "minimal_double":
+        draw.line([(40, cy - 10), (width - 40, cy - 10)], fill=primary, width=3)
+        draw.line([(40, cy + 10), (width - 40, cy + 10)], fill=accent, width=2)
+        return
+
+    if border_style == "dotted_chain":
+        tile_w = 48
+        num_tiles = (width // tile_w) + 2
+        draw.line([(0, cy), (width, cy)], fill=accent, width=2)
+        for i in range(num_tiles):
+            cx = i * tile_w + tile_w // 2
+            r = 10 if i % 2 == 0 else 6
+            pts = [(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)]
+            draw.polygon(pts, fill=primary if i % 2 == 0 else accent)
+        return
+
+    if border_style == "arabesque_arch":
+        tile_w = 68
+        num_tiles = (width // tile_w) + 2
+        for i in range(-1, num_tiles):
+            x0 = i * tile_w
+            xm = x0 + tile_w // 2
+            x1 = x0 + tile_w
+            # Pointed Islamic arch
+            arch = [
+                (x0, y_top + height - 8),
+                (x0, y_top + height * 0.45),
+                (x0 + tile_w * 0.22, y_top + height * 0.18),
+                (xm, y_top + 6),
+                (x1 - tile_w * 0.22, y_top + height * 0.18),
+                (x1, y_top + height * 0.45),
+                (x1, y_top + height - 8),
+            ]
+            draw.line(arch, fill=primary, width=3)
+            # Inner smaller arch
+            inner = [
+                (x0 + 12, y_top + height - 10),
+                (x0 + 12, y_top + height * 0.52),
+                (xm, y_top + 20),
+                (x1 - 12, y_top + height * 0.52),
+                (x1 - 12, y_top + height - 10),
+            ]
+            draw.line(inner, fill=accent, width=2)
+            draw.ellipse([(xm - 4, cy + 6), (xm + 4, cy + 14)], fill=primary)
+        return
+
+    if border_style == "diamond_weave":
+        tile_w = 56
+        num_tiles = (width // tile_w) + 2
+        for i in range(-1, num_tiles):
+            cx = i * tile_w + tile_w // 2
+            # Outer diamond
+            d1 = [(cx, y_top + 6), (cx + tile_w // 2, cy), (cx, y_top + height - 6), (cx - tile_w // 2, cy), (cx, y_top + 6)]
+            draw.line(d1, fill=primary, width=3)
+            # Inner diamond
+            d2 = [(cx, y_top + 18), (cx + tile_w // 4, cy), (cx, y_top + height - 18), (cx - tile_w // 4, cy), (cx, y_top + 18)]
+            draw.line(d2, fill=accent, width=2)
+            draw.ellipse([(cx - 4, cy - 4), (cx + 4, cy + 4)], fill=primary)
+        return
+
+    if border_style == "floral_vine":
+        # Continuous sine wave vine with alternating leaves
+        pts = []
+        for x in range(0, width + 8, 8):
+            y = cy + math.sin(x * 0.045) * (height * 0.24)
+            pts.append((x, y))
+        draw.line(pts, fill=primary, width=3)
+        for x in range(36, width - 20, 70):
+            s = math.sin(x * 0.045)
+            ly = cy + s * (height * 0.24)
+            dir_y = -1 if s >= 0 else 1
+            leaf = [
+                (x, ly),
+                (x + 12, ly + dir_y * 14),
+                (x + 26, ly + dir_y * 6),
+                (x + 14, ly - dir_y * 2),
+                (x, ly),
+            ]
+            draw.polygon(leaf, fill=accent, outline=primary)
+        return
+
+    # Default: islamic_star (8-pointed Rub el Hizb star + diamond lattice)
+    tile_w = 72
     r_outer = height * 0.38
     r_inner = height * 0.19
-    
-    # Interlocking diamond lattice lines
     num_tiles = (width // tile_w) + 2
     for i in range(-1, num_tiles):
         cx = i * tile_w + tile_w // 2
-        
-        # Faint connecting diamond grid
         draw.line([(cx - tile_w // 2, cy), (cx, y_top + 6)], fill=accent, width=2)
         draw.line([(cx, y_top + 6), (cx + tile_w // 2, cy)], fill=accent, width=2)
         draw.line([(cx - tile_w // 2, cy), (cx, y_top + height - 6)], fill=accent, width=2)
         draw.line([(cx, y_top + height - 6), (cx + tile_w // 2, cy)], fill=accent, width=2)
-        
-        # 8-pointed star (Rub el Hizb: two rotated squares)
+
         star_pts = []
         for k in range(16):
             ang = math.radians(k * 22.5)
@@ -368,8 +763,7 @@ def draw_islamic_border_strip(draw: ImageDraw.ImageDraw, width: int, y_top: int,
             star_pts.append((cx + rad * math.cos(ang), cy + rad * math.sin(ang)))
         draw.polygon(star_pts, outline=primary, fill=None)
         draw.line(star_pts + [star_pts[0]], fill=primary, width=2)
-        
-        # Inner accent dot
+
         dot_r = 4
         draw.ellipse([(cx - dot_r, cy - dot_r), (cx + dot_r, cy + dot_r)], fill=accent)
 
@@ -472,9 +866,11 @@ def build_static_canvas(
     footer_brand: str,
     bg_style: str = "classic_cream",
     bg_image: str = "",
+    border_style: str = "islamic_star",
+    border_image: str = "",
 ) -> Image.Image:
     """
-    Creates the static editorial template frame (customizable background + top/bottom Islamic borders + header + footer).
+    Creates the static editorial template frame (customizable background + customizable top/bottom borders + header + footer).
     Cached once per video so rendering is blazing fast.
     """
     bg = theme["paper_bg"]
@@ -485,14 +881,17 @@ def build_static_canvas(
     accent = theme["accent"]
     muted = theme["muted"]
 
-    # 2. Top & Bottom Islamic geometric pattern borders
-    border_h = 74
-    draw_islamic_border_strip(draw, width, 6, border_h, primary, accent, bg)
-    draw.line([(0, border_h + 14), (width, border_h + 14)], fill=accent, width=4)
+    # 2. Top & Bottom customizable ornamental borders
+    if border_style != "none" or (border_image and os.path.exists(border_image)):
+        border_h = 74
+        draw_border_strip(img, draw, width, 6, border_h, primary, accent, bg, border_style=border_style, border_image=border_image)
+        if border_style != "minimal_double":
+            draw.line([(0, border_h + 14), (width, border_h + 14)], fill=accent, width=4)
 
-    bot_y = height - border_h - 6
-    draw.line([(0, bot_y - 10), (width, bot_y - 10)], fill=accent, width=4)
-    draw_islamic_border_strip(draw, width, bot_y, border_h, primary, accent, bg)
+        bot_y = height - border_h - 6
+        if border_style != "minimal_double":
+            draw.line([(0, bot_y - 10), (width, bot_y - 10)], fill=accent, width=4)
+        draw_border_strip(img, draw, width, bot_y, border_h, primary, accent, bg, border_style=border_style, border_image=border_image)
 
     # 3. Header: Series Tag (uppercase with letter spacing)
     y_cursor = 136
@@ -810,15 +1209,22 @@ def render_highlighted_subtitle(
 # 5. AUDIO (PER-SCENE EDGE-TTS + AMBIENT BGM) & VIDEO ASSEMBLY
 # =============================================================================
 
-async def generate_scene_audio(text: str, voice: str, output_path: str) -> float:
+RETRO_INTONATION = {
+    "navy_blue":       {"rate": "-7%", "pitch": "-2Hz", "pause": 0.50},
+    "emerald_sage":    {"rate": "-6%", "pitch": "-1Hz", "pause": 0.50},
+    "terracotta_warm": {"rate": "-9%", "pitch": "-3Hz", "pause": 0.55},
+    "charcoal_gold":   {"rate": "-8%", "pitch": "-3Hz", "pause": 0.55},
+}
+
+async def generate_scene_audio(text: str, voice: str, output_path: str, rate: str = "-6%", pitch: str = "-2Hz") -> float:
     """
-    Generates clean narration audio for a scene using Edge-TTS, with offline fallback.
-    Returns exact audio duration in seconds.
+    Generates clean narration audio for a scene using Edge-TTS with theme-matched prosody,
+    with offline fallback. Returns exact audio duration in seconds.
     """
     clean_text = text.replace("*", "").strip()
     if edge_tts and clean_text:
         try:
-            comm = edge_tts.Communicate(clean_text, voice, rate="-4%")
+            comm = edge_tts.Communicate(clean_text, voice, rate=rate, pitch=pitch)
             await comm.save(output_path)
             res = subprocess.run(
                 ["ffprobe", "-v", "error", "-show_entries", "format=duration",
@@ -849,6 +1255,8 @@ async def render_doodle_reel(
     theme_id: str = "navy_blue",
     bg_style: str = "classic_cream",
     bg_image: str = "",
+    border_style: str = "islamic_star",
+    border_image: str = "",
     voice: str = "id-ID-ArdiNeural",
     output_mp4: str = "content-trend-intelligence/public/clips/retro_dzikirqu_demo.mp4",
     bgm_path: str = "assets/bgm/chill_ambient.mp3",
@@ -866,19 +1274,23 @@ async def render_doodle_reel(
     static_canvas = build_static_canvas(
         width, height, theme, series_tag, title, speaker, footer_brand,
         bg_style=bg_style, bg_image=bg_image,
+        border_style=border_style, border_image=border_image,
     )
 
-    # 2. Generate per-scene narration audio & concat
+    # 2. Generate per-scene narration audio with theme-matched intonation & warm EQ
+    prof = RETRO_INTONATION.get(theme_id, RETRO_INTONATION["navy_blue"])
     scene_durations = []
     audio_files = []
     for idx, sc in enumerate(scenes):
         ap = str(tmp_dir / f"scene_{idx}.mp3")
-        dur = await generate_scene_audio(sc.get("text", ""), voice, ap)
-        # Add 0.45s breathing room between slides
+        dur = await generate_scene_audio(sc.get("text", ""), voice, ap, rate=prof["rate"], pitch=prof["pitch"])
         padded_ap = str(tmp_dir / f"scene_{idx}_pad.mp3")
-        total_sc_dur = dur + 0.45
+        pause_s = prof["pause"]
+        total_sc_dur = dur + pause_s
         subprocess.run(
-            ["ffmpeg", "-y", "-i", ap, "-af", f"apad=pad_dur=0.45", "-t", f"{total_sc_dur:.2f}",
+            ["ffmpeg", "-y", "-i", ap,
+             "-af", f"highpass=f=80,acompressor=threshold=-18dB:ratio=2.2:attack=15:release=180,apad=pad_dur={pause_s:.2f}",
+             "-t", f"{total_sc_dur:.2f}",
              "-c:a", "libmp3lame", "-b:a", "128k", padded_ap],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
@@ -911,7 +1323,7 @@ async def render_doodle_reel(
     if has_bgm:
         cmd += [
             "-stream_loop", "-1", "-i", bgm_path,
-            "-filter_complex", "[2:a]volume=0.10[bgm];[1:a][bgm]amix=inputs=2:duration=first:dropout_transition=2[a]",
+            "-filter_complex", "[2:a]volume=0.22[bgm];[1:a][bgm]amix=inputs=2:duration=first:dropout_transition=2:normalize=0[a]",
             "-map", "0:v", "-map", "[a]",
         ]
     else:
@@ -965,6 +1377,8 @@ def render_preview_frame(
     theme_id: str = "navy_blue",
     bg_style: str = "classic_cream",
     bg_image: str = "",
+    border_style: str = "islamic_star",
+    border_image: str = "",
     output_png: str = "content-trend-intelligence/public/clips/retro_preview.png",
 ) -> str:
     """
@@ -974,6 +1388,7 @@ def render_preview_frame(
     frame = build_static_canvas(
         1080, 1920, theme, series_tag, title, speaker, footer_brand,
         bg_style=bg_style, bg_image=bg_image,
+        border_style=border_style, border_image=border_image,
     )
     render_doodle_on_frame(frame, icon_name, theme, progress=1.0, boil_seed=1)
     render_highlighted_subtitle(frame, subtitle_text, theme, hl_progress=1.0)
@@ -1003,6 +1418,8 @@ if __name__ == "__main__":
     parser.add_argument("--theme", default="navy_blue", choices=list(THEMES.keys()), help="Color theme")
     parser.add_argument("--bg-style", default="classic_cream", help="Background preset style")
     parser.add_argument("--bg-image", default="", help="Optional path to custom uploaded background image")
+    parser.add_argument("--border-style", default="islamic_star", help="Top/bottom border ornament style")
+    parser.add_argument("--border-image", default="", help="Optional path to custom uploaded border strip image")
     parser.add_argument("--voice", default="id-ID-ArdiNeural", help="Edge-TTS voice")
     parser.add_argument("--scenes-json", default="", help="JSON string or path to JSON array of {icon, text}")
     parser.add_argument("--icon", default="mimbar", help="Icon for preview mode")
@@ -1033,6 +1450,8 @@ if __name__ == "__main__":
             theme_id=args.theme,
             bg_style=args.bg_style,
             bg_image=args.bg_image,
+            border_style=args.border_style,
+            border_image=args.border_image,
             output_png=out_img,
         )
         sys.exit(0)
@@ -1046,6 +1465,8 @@ if __name__ == "__main__":
         theme_id=args.theme,
         bg_style=args.bg_style,
         bg_image=args.bg_image,
+        border_style=args.border_style,
+        border_image=args.border_image,
         voice=args.voice,
         output_mp4=args.output,
     ))

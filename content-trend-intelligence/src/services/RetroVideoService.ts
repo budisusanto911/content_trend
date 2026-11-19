@@ -17,6 +17,8 @@ export interface RetroVideoOptions {
   theme: DoodleTheme;
   bgStyle?: string;
   bgImagePath?: string;
+  borderStyle?: string;
+  borderImagePath?: string;
   voice?: string;
   scenes: DoodleScene[];
   previewSceneIndex?: number;
@@ -88,6 +90,8 @@ export class RetroVideoService {
       "--theme", options.theme || "navy_blue",
       "--bg-style", options.bgStyle || "classic_cream",
       ...(options.bgImagePath ? ["--bg-image", options.bgImagePath] : []),
+      "--border-style", options.borderStyle || "islamic_star",
+      ...(options.borderImagePath ? ["--border-image", options.borderImagePath] : []),
       "--icon", activeScene.icon || "mimbar",
       "--text", activeScene.text || "",
       "--scenes-json", JSON.stringify([activeScene]),
@@ -146,6 +150,8 @@ export class RetroVideoService {
       "--theme", options.theme || "navy_blue",
       "--bg-style", options.bgStyle || "classic_cream",
       ...(options.bgImagePath ? ["--bg-image", options.bgImagePath] : []),
+      "--border-style", options.borderStyle || "islamic_star",
+      ...(options.borderImagePath ? ["--border-image", options.borderImagePath] : []),
       "--voice", options.voice || "id-ID-ArdiNeural",
       "--scenes-json", scenesFile,
       "--output", fullOutputPath,

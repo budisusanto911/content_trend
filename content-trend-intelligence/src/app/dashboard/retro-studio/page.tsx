@@ -37,18 +37,62 @@ const BG_OPTIONS = [
   { id: "soft_gradient", name: "Gradasi Pastel", color: "#E6ECF5", desc: "Gradasi lembut senada tema" },
 ];
 
-const ICON_OPTIONS = [
-  { id: "mimbar", label: "Mimbar Khutbah" },
-  { id: "speech", label: "Balon Doa / Ucapan" },
-  { id: "stairs", label: "Tangga Turun" },
-  { id: "tasbih", label: "Untaian Tasbih" },
-  { id: "scrolls", label: "Gulungan Kitab" },
-  { id: "mosque", label: "Masjid & Kubah" },
-  { id: "hands", label: "Tangan Berdoa" },
-  { id: "book", label: "Al-Qur'an & Rehal" },
-  { id: "heart", label: "Hati / Qalb" },
-  { id: "crescent", label: "Bulan Sabit Malam" },
-  { id: "clock", label: "Jam Waktu Mustajab" },
+const BORDER_OPTIONS = [
+  { id: "islamic_star", name: "Bintang 8 Sudut", preview: "✦ ✧ ✦ ✧ ✦", desc: "Rub el Hizb ala DzikirQu" },
+  { id: "arabesque_arch", name: "Kubah Arabesque", preview: "⌒ ⌒ ⌒ ⌒ ⌒", desc: "Deretan lengkung masjid" },
+  { id: "diamond_weave", name: "Anyaman Ketupat", preview: "◇ ◈ ◇ ◈ ◇", desc: "Pola geometris ganda" },
+  { id: "floral_vine", name: "Sulur Daun", preview: "∿ ❀ ∿ ❀ ∿", desc: "Ornamen sulur lembut" },
+  { id: "dotted_chain", name: "Rantai Permata", preview: "◆ • ◆ • ◆", desc: "Minimalis & elegan" },
+  { id: "minimal_double", name: "Garis Ganda", preview: "═════════", desc: "Gaya buku klasik bersih" },
+  { id: "none", name: "Tanpa Border", preview: "—", desc: "Polos tanpa ornamen" },
+];
+
+const ICON_GROUPS = [
+  {
+    group: "Ibadah & Islam",
+    items: [
+      { id: "mimbar", label: "Mimbar Khutbah" },
+      { id: "mosque", label: "Masjid & Kubah" },
+      { id: "kaaba", label: "Ka'bah / Mekkah" },
+      { id: "tasbih", label: "Untaian Tasbih" },
+      { id: "hands", label: "Tangan Berdoa" },
+      { id: "book", label: "Al-Qur'an & Rehal" },
+      { id: "prayer_mat", label: "Sajadah Shalat" },
+      { id: "lantern", label: "Lentera Ramadhan" },
+      { id: "scrolls", label: "Gulungan Kitab" },
+      { id: "water_drop", label: "Air Wudhu / Kesucian" },
+      { id: "charity_coin", label: "Sedekah & Kebaikan" },
+      { id: "compass", label: "Kompas Kiblat / Petunjuk" },
+    ],
+  },
+  {
+    group: "Alam & Tadabbur",
+    items: [
+      { id: "crescent", label: "Bulan Sabit & Bintang" },
+      { id: "sun_rise", label: "Matahari Terbit / Subuh" },
+      { id: "rain_cloud", label: "Awan & Hujan Rahmat" },
+      { id: "mountain", label: "Gunung & Keteguhan" },
+      { id: "tree", label: "Pohon Rindang" },
+      { id: "leaf_sprout", label: "Tunas Harapan / Sabar" },
+      { id: "bird_dove", label: "Burung Merpati / Damai" },
+      { id: "waves", label: "Ombak Laut / Ujian" },
+    ],
+  },
+  {
+    group: "Hikmah & Kehidupan",
+    items: [
+      { id: "speech", label: "Balon Doa / Ucapan" },
+      { id: "stairs", label: "Tangga Turun / Proses" },
+      { id: "heart", label: "Hati / Qalb" },
+      { id: "clock", label: "Jam Waktu Mustajab" },
+      { id: "hourglass", label: "Jam Pasir / Umur" },
+      { id: "pen_quill", label: "Pena Ilmu / Catatan" },
+      { id: "key", label: "Kunci Jalan Keluar" },
+      { id: "shield", label: "Perisai Doa / Pelindung" },
+      { id: "scale_balance", label: "Timbangan Amal / Adil" },
+      { id: "door_arch", label: "Pintu Taubat / Peluang" },
+    ],
+  },
 ];
 
 const VOICE_OPTIONS = [
@@ -72,6 +116,10 @@ export default function RetroStudioPage() {
   const [bgImagePath, setBgImagePath] = useState<string>("");
   const [bgPreviewThumb, setBgPreviewThumb] = useState<string | null>(null);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
+  const [borderStyle, setBorderStyle] = useState<string>("islamic_star");
+  const [borderImagePath, setBorderImagePath] = useState<string>("");
+  const [borderPreviewThumb, setBorderPreviewThumb] = useState<string | null>(null);
+  const [isUploadingBorder, setIsUploadingBorder] = useState(false);
   const [voice, setVoice] = useState("id-ID-ArdiNeural");
 
   const [scenes, setScenes] = useState<SceneItem[]>([
@@ -160,6 +208,36 @@ export default function RetroStudioPage() {
     setBgStyle("classic_cream");
   };
 
+  const handleUploadBorder = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingBorder(true);
+    setErrorMsg(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/retro-video/upload-bg", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.success) {
+        setBorderImagePath(data.bgImagePath);
+        setBorderPreviewThumb(data.bgPreviewUrl);
+        setBorderStyle("custom");
+      } else {
+        setErrorMsg(data.error || "Gagal upload border");
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Gagal upload border");
+    } finally {
+      setIsUploadingBorder(false);
+    }
+  };
+
+  const clearCustomBorder = () => {
+    setBorderImagePath("");
+    setBorderPreviewThumb(null);
+    setBorderStyle("islamic_star");
+  };
+
   const handleGeneratePreview = async (sceneIndex = 0) => {
     setIsPreviewing(true);
     setErrorMsg(null);
@@ -175,6 +253,8 @@ export default function RetroStudioPage() {
           theme,
           bgStyle,
           bgImagePath,
+          borderStyle,
+          borderImagePath,
           scenes,
           previewSceneIndex: sceneIndex,
         }),
@@ -208,6 +288,8 @@ export default function RetroStudioPage() {
           theme,
           bgStyle,
           bgImagePath,
+          borderStyle,
+          borderImagePath,
           voice,
           scenes,
         }),
@@ -374,10 +456,14 @@ export default function RetroStudioPage() {
                         onChange={(e) => updateScene(idx, { icon: e.target.value })}
                         className="px-2.5 py-1 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700"
                       >
-                        {ICON_OPTIONS.map((ic) => (
-                          <option key={ic.id} value={ic.id}>
-                            Ilustrasi: {ic.label}
-                          </option>
+                        {ICON_GROUPS.map((grp) => (
+                          <optgroup key={grp.group} label={grp.group}>
+                            {grp.items.map((ic) => (
+                              <option key={ic.id} value={ic.id}>
+                                Ilustrasi: {ic.label}
+                              </option>
+                            ))}
+                          </optgroup>
                         ))}
                       </select>
                       <button
@@ -518,6 +604,77 @@ export default function RetroStudioPage() {
                       />
                       <p className="text-[11px] font-bold text-gray-900 truncate">{b.name}</p>
                       <p className="text-[10px] text-gray-500 truncate">{b.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Ornamen Border Atas & Bawah Selector */}
+            <div className="pt-4 border-t border-gray-100 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600" /> Ornamen Border Atas &amp; Bawah
+                </label>
+                <label className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-800 cursor-pointer transition-colors">
+                  <Upload className="w-3.5 h-3.5" />
+                  {isUploadingBorder ? "Mengupload..." : "Upload Border Sendiri"}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleUploadBorder}
+                    disabled={isUploadingBorder}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {borderPreviewThumb && (
+                <div className="flex items-center justify-between p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={borderPreviewThumb}
+                      alt="Custom border"
+                      className="h-8 w-24 object-cover rounded border border-black/10"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-indigo-900">Border Custom Aktif</p>
+                      <p className="text-[11px] text-indigo-700/80">Otomatis di-tile horizontal di atas &amp; bawah</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearCustomBorder}
+                    className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-white transition-colors"
+                    title="Hapus border custom"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {BORDER_OPTIONS.map((bo) => {
+                  const isActive = !borderImagePath && borderStyle === bo.id;
+                  return (
+                    <div
+                      key={bo.id}
+                      onClick={() => {
+                        setBorderImagePath("");
+                        setBorderPreviewThumb(null);
+                        setBorderStyle(bo.id);
+                      }}
+                      className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
+                        isActive
+                          ? "border-indigo-600 bg-indigo-50/40 shadow-sm"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <div className="w-full h-7 rounded-md mb-1.5 bg-[#F2EDE0] border border-black/10 flex items-center justify-center text-xs font-bold text-[#182B44] tracking-widest">
+                        {bo.preview}
+                      </div>
+                      <p className="text-[11px] font-bold text-gray-900 truncate">{bo.name}</p>
+                      <p className="text-[10px] text-gray-500 truncate">{bo.desc}</p>
                     </div>
                   );
                 })}

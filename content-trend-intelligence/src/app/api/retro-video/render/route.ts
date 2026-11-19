@@ -15,6 +15,8 @@ export async function POST(req: Request) {
       theme = "navy_blue",
       bgStyle = "classic_cream",
       bgImagePath = "",
+      borderStyle = "islamic_star",
+      borderImagePath = "",
       voice = "id-ID-ArdiNeural",
       scenes = [],
     } = body;
@@ -31,6 +33,8 @@ export async function POST(req: Request) {
       theme,
       bgStyle,
       bgImagePath,
+      borderStyle,
+      borderImagePath,
       voice,
       scenes,
     });

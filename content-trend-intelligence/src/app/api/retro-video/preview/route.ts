@@ -14,6 +14,8 @@ export async function POST(req: Request) {
       theme = "navy_blue",
       bgStyle = "classic_cream",
       bgImagePath = "",
+      borderStyle = "islamic_star",
+      borderImagePath = "",
       scenes = [],
       previewSceneIndex = 0,
     } = body;
@@ -26,6 +28,8 @@ export async function POST(req: Request) {
       theme,
       bgStyle,
       bgImagePath,
+      borderStyle,
+      borderImagePath,
       scenes,
       previewSceneIndex,
     });
